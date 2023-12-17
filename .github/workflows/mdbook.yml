@@ -62,7 +62,7 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: |
-            ./src/assets/devicon.*
+            ./src/devicon.*
             ./src/fonts/devicon.*
             ./src/assets/whichlang.*
           key: ${{ runner.os }}-static
@@ -70,7 +70,7 @@ jobs:
       - name: Setup cacheable static extensions
         run: |
           mkdir -p src/fonts
-          curl -sSf -o src/assets/devicon.min.css https://raw.githubusercontent.com/devicons/devicon/master/devicon.min.css
+          curl -sSf -o src/devicon.min.css https://raw.githubusercontent.com/devicons/devicon/master/devicon.min.css
           curl -sSf -o src/fonts/devicon.eot https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.eot
           curl -sSf -o src/fonts/devicon.svg https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.svg
           curl -sSf -o src/fonts/devicon.ttf https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.ttf
@@ -83,7 +83,7 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: |
-            ./src/assets/devicon.*
+            ./src/devicon.*
             ./src/fonts/devicon.*
             ./src/assets/whichlang.*
           key: ${{ steps.cache-static.outputs.cache-primary-key }}
