@@ -68,10 +68,12 @@ jobs:
           curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
           mdbook-admonish install --css-dir src/assets .
           mdbook-mermaid install .
-          touch book/.nojekyll
 
       - name: Build with mdBook
         run: mdbook build
+
+      - name: Turn off Jekyll
+        run: touch book/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
