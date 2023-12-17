@@ -8,7 +8,7 @@ Memory plays a pivotal role in the performance of your PostgreSQL database, as d
 
 The `shared_buffers` setting determines the amount of memory allocated for PostgreSQL to use for caching data. This cache is critical because it allows frequently accessed data to be served directly from memory, which is much faster than reading from disk.
 
-```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
+```conf,lang=ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Set the amount of memory the database server uses for shared memory buffers
 shared_buffers = '4GB'
 ```
@@ -17,7 +17,7 @@ As a general guideline, setting `shared_buffers` to approximately 25% of the tot
 
 You can run this query to see the status of your buffers:
 
-```sql,icon=.devicon-postgresql-plain-wordmark
+```sql,icon=.devicon-postgresql-plain,filepath=psql
 WITH block_size AS (
     SELECT setting::integer AS block_size
     FROM pg_settings
@@ -67,7 +67,7 @@ There is little value in setting this larger than `shared_buffers`, but the RAM 
 
 The `effective_cache_size` parameter helps the PostgreSQL query planner to estimate how much memory is available for disk caching by the operating system and PostgreSQL combined:
 
-```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
+```conf,lang=ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Set the planner's assumption about the effective size of the disk cache
 effective_cache_size = '8GB'
 ```
@@ -76,7 +76,7 @@ This is not a setting that allocates memory, but rather an help the planner make
 
 For example, using the `top` command, you might see:
 
-```bash
+```bash,icon=.devicon-bash-plain,filepath=top
 # top -n1 | head -n5
 top - 20:06:16 up 3 days,  5:51,  7 users,  load average: 1.76, 2.03, 2.04
 Tasks: 1018 total,   1 running, 1017 sleeping,   0 stopped,   0 zombie
@@ -91,7 +91,7 @@ Here, although only 10GB is "free", 45GB is being used by the OS for cache. By s
 
 The `work_mem` setting controls the amount of memory used for internal sort operations and hash tables instead of writing to temporary disk files:
 
-```ini
+```conf,lang=ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Set the maximum amount of memory to be used for query workspaces
 work_mem = '32MB'
 ```
@@ -102,7 +102,7 @@ Remember that each query operation can potentially use up to `work_mem` memory, 
 
 You can use this query to see how many (and how often) the temporary files are written to disk because the `work_mem` wasn't high enough:
 
-```sql,icon=.devicon-postgresql-plain-wordmark
+```sql,icon=.devicon-postgresql-plain,filepath=psql
 SELECT datname,
        temp_files,
        temp_bytes
