@@ -30,10 +30,7 @@ jobs:
         with:
           mdbook-version: "latest"
 
-      - name: Get current date
-        run: echo "CURRENT_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
-
-      - name: Restore Cargo Cache
+      - name: Restore Cache
         id: cache-cargo
         uses: actions/cache/restore@v3
         with:
@@ -42,11 +39,22 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ./target
-          key: ${{ runner.os }}-cargo-${{ env.CURRENT_DATE }}
+            ./book/devicon.*
+            ./book/theme/fonts/devicon.*
+            ./src/assets/whichlang.*
+          key: ${{ runner.os }}-cargo
 
-      - name: Setup mdBook Rust extensions
+      - name: Setup cacheable extensions
         run: |
           cargo install mdbook-admonish mdbook-footnote mdbook-graphviz mdbook-mermaid
+          mkdir -p book/theme/fonts
+          curl -sSf -o book/devicon.min.css https://raw.githubusercontent.com/devicons/devicon/master/devicon.min.css
+          curl -sSf -o book/theme/fonts/devicon.eot https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.eot
+          curl -sSf -o book/theme/fonts/devicon.eot https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.svg
+          curl -sSf -o book/theme/fonts/devicon.eot https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.ttf
+          curl -sSf -o book/theme/fonts/devicon.eot https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.woff
+          curl -sSf -o src/assets/whichlang.css https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
+          curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
         if: steps.cache-cargo.outputs.cache-hit != 'true'
 
       - name: Store Cargo Cache
@@ -57,17 +65,17 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ./target
+            ./book/devicon.*
+            ./book/theme/fonts/devicon.*
+            ./src/assets/whichlang.*
           key: ${{ steps.cache-cargo.outputs.cache-primary-key }}
         if: steps.cache-cargo.outputs.cache-hit != 'true'
 
-      - name: Setup mdBook non-Rust extensions
+      - name: Setup non-cacheable extensions
         run: |
           sudo apt update && sudo apt install -y graphviz
-          curl -sSf -o src/assets/whichlang.css https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
-          curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
           mdbook-admonish install --css-dir src/assets .
           mdbook-mermaid install .
-
       - name: Build with mdBook
         run: mdbook build
 
