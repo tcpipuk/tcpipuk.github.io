@@ -30,20 +30,48 @@ jobs:
         with:
           mdbook-version: "latest"
 
-      - name: Setup mdBook Extensions
+      - name: Get current date
+        id: get-date
+        run: echo "::set-output name=date::$(date +%Y-%m-%d)"
+
+      - name: Restore Cargo Cache
+        id: cache-cargo
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./target
+          key: ${{ runner.os }}-cargo-${{ steps.get-date.outputs.date }}
+
+      - name: Setup mdBook Rust extensions
         run: |
+          cargo install mdbook-admonish mdbook-footnote mdbook-graphviz mdbook-mermaid
+        if: steps.cache-cargo.outputs.cache-hit != 'true'
+
+      - name: Store Cargo Cache
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./target
+          key: ${{ steps.cache-cargo.outputs.cache-primary-key }}
+        if: steps.cache-cargo.outputs.cache-hit != 'true'
+
+      - name: Setup mdBook non-Rust extensions
+        run: |
+          sudo apt update && sudo apt install -y graphviz
           curl -sSf -o src/assets/whichlang.css https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
           curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
-          sudo apt update && sudo apt install -y graphviz
-          cargo install mdbook-admonish mdbook-footnote mdbook-graphviz mdbook-mermaid
           mdbook-admonish install --css-dir src/assets .
           mdbook-mermaid install .
+          touch book/.nojekyll
 
       - name: Build with mdBook
         run: mdbook build
-
-      - name: Turn off Jekyll
-        run: touch book/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
