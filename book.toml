@@ -1,0 +1,32 @@
+[book]
+title = "Tom's Docs"
+authors = ["Tom Foster"]
+language = "en"
+multilingual = false
+
+# The directory that documentation files are stored in
+src = "src"
+
+[build]
+create-missing = true
+
+[output.html]
+# URL to send visitors who click edit
+edit-url-template = "https://github.com/tcpipuk/tcpipuk.github.io/edit/main/{path}"
+
+# Remove numbers before each item in the sidebar
+no-section-label = true
+
+# The source code URL of the repository
+git-repository-url = "https://github.com/tcpipuk/tcpipuk.github.io/"
+
+# The path that the docs are hosted on
+site-url = "/"
+
+# Additional HTML, JS, CSS injected into each page of the book
+additional-css = [
+    "src/assets/table-of-contents.css",
+    "src/assets/remove-nav-buttons.css",
+    "src/assets/indent-section-headers.css",
+]
+additional-js = ["src/assets/table-of-contents.js"]
