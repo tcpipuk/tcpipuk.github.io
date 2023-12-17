@@ -1,9 +1,9 @@
 # Summary
 
-# Introduction
+## Introduction
 
 - [Welcome](welcome.md)
 
-# PostgreSQL
+## PostgreSQL
 
-# Synapse
+## Synapse
