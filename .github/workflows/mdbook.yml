@@ -34,10 +34,10 @@ jobs:
         run: |
           curl -sSf -o src/assets/whichlang.css https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
           curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
-          apt update && apt install -y graphviz
+          sudo apt update && sudo apt install -y graphviz
           cargo install mdbook-admonish mdbook-footnote mdbook-graphviz mdbook-mermaid
-          mdbook-admonish install book
-          mdbook-mermaid install book
+          mdbook-admonish install --css-dir src/assets .
+          mdbook-mermaid install .
 
       - name: Build with mdBook
         run: mdbook build
