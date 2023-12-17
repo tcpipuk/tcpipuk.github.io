@@ -31,8 +31,7 @@ jobs:
           mdbook-version: "latest"
 
       - name: Get current date
-        id: get-date
-        run: echo "::set-output name=date::$(date +%Y-%m-%d)"
+        run: echo "CURRENT_DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
 
       - name: Restore Cargo Cache
         id: cache-cargo
@@ -43,7 +42,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ./target
-          key: ${{ runner.os }}-cargo-${{ steps.get-date.outputs.date }}
+          key: ${{ runner.os }}-cargo-${{ env.CURRENT_DATE }}
 
       - name: Setup mdBook Rust extensions
         run: |
