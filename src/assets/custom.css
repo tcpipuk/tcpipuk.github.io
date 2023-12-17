@@ -1,0 +1,25 @@
+/* Wider page on desktop */
+:root {
+  --page-padding: 0.5em;
+  --content-max-width: 50em;
+}
+
+/* Slightly less massive font */
+body {
+  font-size: 1.5rem;
+}
+
+/* Hide prev/next buttons on desktop mode */
+.nav-wide-wrapper {
+  display: none;
+}
+
+/* Limit max height of code blocks */
+code {
+  max-height: 30em;
+}
+
+/* Indent menu subheadings from headings */
+.chapter-item {
+  margin-left: 0.5em;
+}

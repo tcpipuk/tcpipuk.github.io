@@ -1,0 +1,19 @@
+{
+	"markdown.extension.toc.levels": "3..6",
+	"markdownlint.config": {
+		"MD010": {
+			"spaces_per_tab": 3
+		},
+		"MD013": {
+			"code_blocks": false,
+			"headings": false,
+			"line_length": 100,
+			"strict": false,
+			"tables": false
+		},
+		"MD033": {
+			"allowed_elements": ["br"]
+		},
+		"no-hard-tabs": true
+	}
+}

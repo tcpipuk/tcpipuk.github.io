@@ -1,0 +1,79 @@
+name: Lint Markdown Files
+
+on:
+  push:
+    branches:
+      - "*"
+    paths:
+      - "**.md"
+  workflow_dispatch:
+
+jobs:
+  lint-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Create markdownlint config
+        run: |
+          cat > .markdownlint.json << 'EOF'
+          {
+            "default": true,
+            "MD013": {
+              "code_blocks": false,
+              "headings": false,
+              "line_length": 100,
+              "strict": false,
+              "tables": false
+            },
+            "MD033": {
+              "allowed_elements": ["br"]
+            }
+          }
+          EOF
+
+      - name: Run markdownlint
+        id: lint
+        continue-on-error: true
+        run: |
+          # Run markdownlint and capture output
+          OUTPUT=$(markdownlint '**/*.md' --ignore node_modules 2>&1)
+          EXIT_CODE=$?
+
+          # Create a summary
+          {
+            echo "## Markdown Lint Results"
+            echo
+            if [ $EXIT_CODE -eq 0 ]; then
+              echo "✅ All markdown files pass linting"
+            else
+              echo "❌ Found linting issues"
+              echo
+              echo "### Issues by File"
+              echo
+              echo "\`\`\`"
+              # Process the output to group by file
+              echo "$OUTPUT" | awk -F':' '
+              {
+                file=$1
+                if (!files[file]) {
+                  files[file] = 1
+                  print "\n" file ":"
+                }
+                sub(/^[^:]*:[^:]*:/, "  Line " $2 ":")
+                print
+              }'
+              echo "\`\`\`"
+            fi
+          } >> $GITHUB_STEP_SUMMARY
+
+          exit $EXIT_CODE

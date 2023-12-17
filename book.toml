@@ -1,0 +1,40 @@
+[book]
+title = "Tom's Docs"
+authors = ["Tom Foster"]
+description = "Tom's public documentation site"
+language = "en"
+multilingual = false
+src = "src"
+
+[build]
+build-dir = "book"
+create-missing = true
+
+[output.html]
+default-theme = "latte"
+preferred-dark-theme = "mocha"
+# URL to send visitors who click edit
+edit-url-template = "https://github.com/tcpipuk/tcpipuk.github.io/edit/main/{path}"
+# Remove numbers before each item in the sidebar
+no-section-label = true
+# The source code URL of the repository
+git-repository-url = "https://github.com/tcpipuk/tcpipuk.github.io/"
+# The path that the docs are hosted on
+site-url = "/"
+# Additional HTML, JS, CSS injected into each page of the book
+additional-css = [
+	"devicon.min.css",
+	"src/assets/table-of-contents.css",
+	"src/assets/whichlang.css",
+	"src/assets/custom.css",
+	"./theme/catppuccin.css",
+	"./theme/catppuccin-admonish.css",
+]
+additional-js = ["src/assets/table-of-contents.js", "src/assets/whichlang.js"]
+
+[preprocessor.footnote]
+
+[preprocessor.graphviz]
+after = ["links"]
+command = "mdbook-graphviz"
+output-to-file = false
