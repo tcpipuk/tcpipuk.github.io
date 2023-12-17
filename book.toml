@@ -25,7 +25,7 @@ site-url = "/"
 
 # Additional HTML, JS, CSS injected into each page of the book
 additional-css = [
-    "book/theme/devicon.min.css",
+    "src/assets/devicon.min.css",
     "src/assets/table-of-contents.css",
     "src/assets/remove-nav-buttons.css",
     "src/assets/indent-section-headers.css",
