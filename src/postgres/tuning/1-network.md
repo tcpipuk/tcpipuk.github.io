@@ -49,7 +49,7 @@ When Synapse and PostgreSQL are on different hosts or when Unix sockets are not 
 
 2. Point Synapse to the correct TCP port and address in the `homeserver.yaml` file:
 
-   ```yaml,icon=@fonts/matrix.svg,filepath=homeserver.yaml
+   ```yaml,icon=@/fonts/matrix.svg,filepath=homeserver.yaml
    database:
    name: psycopg2
    args:
