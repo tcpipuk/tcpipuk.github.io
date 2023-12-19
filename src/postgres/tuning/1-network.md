@@ -10,7 +10,7 @@ Unix sockets provide a high-speed communication channel between processes on the
 
 1. Edit the `postgresql.conf` file to specify the directory for the Unix socket:
 
-   ```conf,lang=ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
+   ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
    # Set the directory for the Unix socket
    unix_socket_directories = '/var/run/postgresql'
    ```
@@ -39,7 +39,7 @@ When Synapse and PostgreSQL are on different hosts or when Unix sockets are not 
 
 1. PostgreSQL listens on TCP port 5432 by default, but you can verify or change this in the `postgresql.conf` file:
 
-   ```conf,lang=ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
+   ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
    # Listen for TCP connections on the following addresses and ports
    listen_addresses = '*'
    port = 5432
