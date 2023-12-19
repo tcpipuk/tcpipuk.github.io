@@ -19,7 +19,7 @@ Unix sockets provide a high-speed communication channel between processes on the
 
 2. Configure Synapse to use Unix sockets by editing the `homeserver.yaml` file:
 
-   ```yaml
+   ```yaml,filepath=homeserver.yaml
    database:
    name: psycopg2
    args:

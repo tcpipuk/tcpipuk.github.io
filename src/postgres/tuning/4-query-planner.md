@@ -10,7 +10,7 @@ The planner weighs various factors (such as data size, indexes, and available sy
 
 These parameters help PostgreSQL's query planner estimate the relative cost of different query execution plans:
 
-```ini
+```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Cost of a non-sequentially-fetched disk page
 random_page_cost = 1.1
 
@@ -58,7 +58,7 @@ min_parallel_table_scan_size = 8MB
 
 At the time of writing, Synapse doesn't use partitioning in tables, so these should have no effect. However, as they have no negative impact on performance, it's worth enabling them in case partitioned tables appear in the future.
 
-```ini
+```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Allows the planner to consider partitions on joins
 enable_partitionwise_join = on
 
