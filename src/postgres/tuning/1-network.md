@@ -10,7 +10,7 @@ Unix sockets provide a high-speed communication channel between processes on the
 
 1. Edit the `postgresql.conf` file to specify the directory for the Unix socket:
 
-   ```ini
+   ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
    # Set the directory for the Unix socket
    unix_socket_directories = '/var/run/postgresql'
    ```
@@ -19,7 +19,7 @@ Unix sockets provide a high-speed communication channel between processes on the
 
 2. Configure Synapse to use Unix sockets by editing the `homeserver.yaml` file:
 
-   ```yaml
+   ```yaml,filepath=homeserver.yaml
    database:
    name: psycopg2
    args:
@@ -39,7 +39,7 @@ When Synapse and PostgreSQL are on different hosts or when Unix sockets are not 
 
 1. PostgreSQL listens on TCP port 5432 by default, but you can verify or change this in the `postgresql.conf` file:
 
-   ```ini
+   ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
    # Listen for TCP connections on the following addresses and ports
    listen_addresses = '*'
    port = 5432
@@ -49,7 +49,7 @@ When Synapse and PostgreSQL are on different hosts or when Unix sockets are not 
 
 2. Point Synapse to the correct TCP port and address in the `homeserver.yaml` file:
 
-   ```yaml
+   ```yaml,filepath=homeserver.yaml
    database:
    name: psycopg2
    args:

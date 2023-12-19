@@ -10,7 +10,7 @@ Over time, your PostgreSQL database will grow as more data is added. It's import
 
 This query will list your largest tables:
 
-```sql
+```sql,icon=.devicon-postgresql-plain,filepath=psql
 WITH table_sizes AS (
     SELECT table_schema,
            table_name, 
@@ -34,7 +34,7 @@ LIMIT 10;
 
 On a Synapse server, you should find `state_groups_state` is by far the largest one, and can see which rooms are the largest with a query like this:
 
-```sql
+```sql,icon=.devicon-postgresql-plain,filepath=psql
 WITH room_counts AS (
     SELECT room_id,
            COUNT(*),
@@ -75,7 +75,7 @@ Media files, such as images and videos and other message attachments, are stored
 
 With this query you can see how many files of each type were uploaded each month, and the total disk space that consumes:
 
-```sql
+```sql,icon=.devicon-postgresql-plain,filepath=psql
 WITH media_size AS (
     SELECT EXTRACT(YEAR FROM to_timestamp(created_ts / 1000)) AS year,
         EXTRACT(MONTH FROM to_timestamp(created_ts / 1000)) AS month,
@@ -113,7 +113,7 @@ Synapse provides [configuration options](https://matrix-org.github.io/synapse/la
 
 Here's an example of how you might configure these in your `homeserver.yaml`:
 
-```yaml
+```yaml,filepath=homeserver.yaml
 media_store_path: "/var/lib/synapse/media"
 max_upload_size: "10M"
 media_retention:

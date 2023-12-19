@@ -1,6 +1,6 @@
 # Tuning PostgreSQL for a Matrix Synapse Homeserver
 
-## 2. PostgreSQL Worker Configuration
+## 2. Worker Configuration
 
 PostgreSQL splits work among processes that handle various tasks, from executing queries to performing maintenance operations. Just like in Synapse, these extra threads are called "workers", and the number of them and their configuration can have a huge influence on the performance of your database.
 
@@ -25,7 +25,7 @@ The number of workers in PostgreSQL is closely tied to the number of available C
 
 Here's an example of how you might configure the worker settings in `postgresql.conf`:
 
-```ini
+```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Set the maximum number of background processes that the system can support
 max_worker_processes = 16
 
@@ -55,20 +55,20 @@ Finally, `max_parallel_maintenance_workers` determines how many workers can be u
 
    If it's not present, simply add the following line:
 
-   ```ini
+   ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
    shared_preload_libraries = 'pg_buffercache,pg_stat_statements'
    ```
 
 2. Restart the PostgreSQL server for the changes to take effect, then run these queries:
 
-   ```sql
+   ```sql,icon=.devicon-postgresql-plain,filepath=psql
    CREATE EXTENSION IF NOT EXISTS pg_buffercache;
    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
    ```
 
 **Note:** These extensions cause PostgreSQL to use slightly more shared memory, and consume a few percent higher CPU time. There's no harm leaving them running, but as we're tuning for maximum performance, you may wish to disable them again after our investigation with these queries:
 
-```sql
+```sql,icon=.devicon-postgresql-plain,filepath=psql
 DROP EXTENSION IF EXISTS pg_buffercache;
 DROP EXTENSION IF EXISTS pg_stat_statements;
 ```
@@ -81,7 +81,7 @@ Use tools like `top`, `htop`, or `vmstat` to monitor CPU usage, or `docker stats
 
 With `pg_stat_statements` enabled, you can now monitor the performance of your SQL statements. Here's a query to help you analyse the database's behaviour:
 
-```sql
+```sql,icon=.devicon-postgresql-plain,filepath=psql
 SELECT LEFT(query, 80) AS query,
        calls,
        mean_exec_time AS average_time_ms,
@@ -97,7 +97,7 @@ This should show the top 10 queries that consumed the most time on average, incl
 
 To reset the statistics collected by `pg_stat_statements`, you can execute the following command:
 
-```sql
+```sql,icon=.devicon-postgresql-plain,filepath=psql
 SELECT pg_stat_statements_reset();
 ```
 

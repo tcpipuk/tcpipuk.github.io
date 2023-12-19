@@ -14,7 +14,7 @@ Autovacuum is PostgreSQL's automated janitor, regularly tidying up to save you d
 
 Here are the defaults:
 
-```ini
+```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 autovacuum_analyze_scale_factor = 0.1
 autovacuum_vacuum_scale_factor = 0.2
 autovacuum_vacuum_cost_limit = -1 # uses value of vacuum_cost_limit
@@ -28,7 +28,7 @@ vacuum_cost_limit = 200
 
 Here is an example that would run operations more frequently:
 
-```ini
+```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 autovacuum_analyze_scale_factor = 0.05
 autovacuum_vacuum_scale_factor = 0.02
 autovacuum_vacuum_cost_limit = 400

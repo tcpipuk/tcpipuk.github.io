@@ -4,7 +4,7 @@
 - [PostgreSQL](postgres/README.md)
   - [Tuning](postgres/tuning/README.md)
     - [Network Configuration](postgres/tuning/1-network.md)
-    - [PostgreSQL Worker Configuration](postgres/tuning/2-workers.md)
+    - [Worker Configuration](postgres/tuning/2-workers.md)
     - [Memory Configuration](postgres/tuning/3-memory.md)
     - [Query Planner Configuration](postgres/tuning/4-query-planner.md)
     - [Maintenance](postgres/tuning/5-maintenance.md)

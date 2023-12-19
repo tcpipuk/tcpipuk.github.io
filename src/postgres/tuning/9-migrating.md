@@ -46,7 +46,7 @@ Now you have your entire database in a single `.sql` file, you can stop PostgreS
 
 If you're using Docker Compose, you can simply update your `docker-compose.yml` to use the newer image (e.g. `postgres:16-alpine`) and change the volume mapping to store the data in a new directory, for example when upgrading from PostgreSQL 15:
 
-```yaml
+```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
 services:
   db:
     image: postgres:15-alpine
@@ -56,7 +56,7 @@ services:
 
 When moving to PostgreSQL 16 we'd change this to:
 
-```yaml
+```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
 services:
   db:
     image: postgres:16-alpine
