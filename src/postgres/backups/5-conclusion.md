@@ -1,6 +1,6 @@
 # Setting Up a Replica for Backups for PostgreSQL in Docker
 
-## 4. Round Up
+## 5. Conclusion
 
 And there you have it! A dedicated backup replica for your PostgreSQL database in Docker.
 
