@@ -1,6 +1,6 @@
 # Tuning PostgreSQL for a Matrix Synapse Homeserver
 
-## 2. PostgreSQL Worker Configuration
+## 2. Worker Configuration
 
 PostgreSQL splits work among processes that handle various tasks, from executing queries to performing maintenance operations. Just like in Synapse, these extra threads are called "workers", and the number of them and their configuration can have a huge influence on the performance of your database.
 
