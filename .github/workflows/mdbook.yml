@@ -1,20 +1,28 @@
-name: Deploy mdBook to Pages
+name: Deploy mdBook site to Pages
 
 on:
+  # Run on all branches
   push:
     branches:
       - "*"
+  # Allow running manually
   workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-    permissions:
-      contents: read
-      id-token: write
-      pages: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -107,5 +115,5 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
-        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: actions/deploy-pages@v3
+        #if: ${{ github.ref == 'refs/heads/main' }}
