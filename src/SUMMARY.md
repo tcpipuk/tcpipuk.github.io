@@ -19,4 +19,5 @@
     - [Starting Replication](postgres/backups/3-replication.md)
     - [Backup Script](postgres/backups/4-backups.md)
     - [Conclusion](postgres/backups/5-conclusion.md)
-- [Synapse](synapse/README.md)
+- [Matrix Synapse](synapse/README.md)
+  - [Configuration](synapse/configuration/README.md)
