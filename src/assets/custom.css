@@ -1,7 +1,12 @@
 /* Wider page on desktop */
 :root {
-  --page-padding: 0;
+  --page-padding: 0.5em;
   --content-max-width: 50em;
+}
+
+/* Slightly less massive font */
+body {
+  font-size: 1.5rem;
 }
 
 /* Hide prev/next buttons on desktop mode */
