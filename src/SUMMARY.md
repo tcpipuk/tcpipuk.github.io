@@ -22,7 +22,7 @@
 - [Matrix Synapse](synapse/README.md)
   - [Deployment](synapse/deployment/README.md)
     - [Docker Compose with Templates](synapse/deployment/1-docker.md)
-    - [Synapse Configuration](synapse/deployment/2-config.md)
+    - [Synapse Configuration](synapse/deployment/2-synapse.md)
     - [PostgreSQL Configuration](synapse/deployment/3-postgres.md)
     - [Nginx Configuration](synapse/deployment/4-nginx.md)
     - [Worker Configuration](synapse/deployment/5-workers.md)
