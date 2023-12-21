@@ -31,8 +31,8 @@ max_worker_processes = 8
 max_parallel_workers = 8
 
 # Maximum number of workers that can be used for a single query
-# (typically a quarter of the total workers)
-max_parallel_workers_per_gather = 4
+# (typically a quarter to a third of the total workers)
+max_parallel_workers_per_gather = 3
 
 # Maximum number of workers that can be used for maintenance operations
 # (typically an eighth to a quarter of the total workers)
