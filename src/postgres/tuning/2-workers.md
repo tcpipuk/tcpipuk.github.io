@@ -26,26 +26,26 @@ The number of workers in PostgreSQL is closely tied to the number of available C
 Here's an example of how you might configure the worker settings in `postgresql.conf`:
 
 ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
-# Set the maximum number of background processes that the system can support
+# Maximum number of workers in total, including maintenance and replication
+# (typically the number of CPU cores you have)
 max_worker_processes = 16
 
-# Set the maximum number of workers that the system can use for parallel operations
+# Maximum number of workers in total that can be used for queries
+# (capped by max_worker_processes, so typically the same number)
 max_parallel_workers = 16
 
-# Set the maximum number of workers that can be used for a single parallel operation
+# Maximum number of workers that can be used for a single query
+# (typically a quarter of the total workers)
 max_parallel_workers_per_gather = 4
 
-# Set the maximum number of workers that can be used for parallel maintenance operations
+# Maximum number of workers that can be used for maintenance operations
+# (typically an eighth to a quarter of the total workers)
 max_parallel_maintenance_workers = 4
 ```
 
-The `max_worker_processes` setting determines the total number of background processes that PostgreSQL can initiate. This includes not only worker processes for parallel queries but also other background processes such as autovacuum workers and replication.
+Postgres is generally reliable at choosing how many workers to use, but doesn't necessarily understand the profile of the work you're expecting from it each day, as it doesn't understand how your application (in this case Synapse) is designed.
 
-The `max_parallel_workers` setting is the maximum number of workers that can be used for parallel query execution across the entire system. It's recommended to set this equal to the number of CPU cores available to balance the workload without overloading the system.
-
-The `max_parallel_workers_per_gather` setting limits the number of workers that can be used for a single parallel query. Setting this to a quarter of the available cores is a good starting point, as it allows parallel execution without monopolising all resources for a single query, which could starve other queries or processes.
-
-Finally, `max_parallel_maintenance_workers` determines how many workers can be used for maintenance operations such as creating indexes or vacuuming. These operations can be resource-intensive, so it's wise to limit the number of workers to prevent them from impacting the performance of other database activities.
+When all workers are busy, Postgres will queue incoming queries until workers are available, which delays those queries being answered, so you may be tempted to set `max_parallel_workers_per_gather = 1` to ensure more queries are handled immediately. However, if one query requires a lock on a table, then all other workers would need to wait to access that data, so in the Synapse case it's better to use parallelism when possible to speed up complex queries, rather than trying to enable the maximum amount of queries to be running at the same time.
 
 ### Checks and Adjustments
 
