@@ -165,9 +165,6 @@ And if you're following [my backups guide](../../postgres/backups/README.md), it
 ```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
   db-replica:
     <<: *postgres-template
-    volumes:
-      - sockets:/sockets
-      - ./pgsql16:/var/lib/postgresql/data
     environment:
       POSTGRES_STANDBY_MODE: "on"
       POSTGRES_PRIMARY_CONNINFO: host=/sockets user=synapse password=${SYNAPSE_PASSWORD}
@@ -192,4 +189,4 @@ With all of our templates above, Synapse itself is this easy:
     <<: *synapse-template
 ```
 
-Theoretically you're now ready to launch! In the next section, we just need to set up the config files for each of these applications and you're ready to go.
+In the next sections, we just need to set up the config files for each of these applications and then you're ready to go.
