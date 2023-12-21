@@ -17,11 +17,9 @@ For Synapse and PostgreSQL, the goal is to strike a balance: we want to ensure t
 
 ### Tuning Workers to CPU Cores
 
-More workers don't always mean better performance, in the same way adding infinite cooks to a kitchen doesn't speed up the food.
+The number of workers in PostgreSQL is closely tied to the number of available CPU cores because each worker process can perform tasks concurrently on a separate core.
 
-If there are too many workers, they might end up waiting for locks to clear rather than handling queries, or consuming all of the shared memory on the system. This scenario can lead to the system becoming IO-bound, where the database spends more time waiting for resources than actually processing data, which can degrade performance rather than improve it.
-
-The number of workers in PostgreSQL is closely tied to the number of available CPU cores because each worker process can perform tasks concurrently on a separate core. However, too many workers can lead to resource contention and increased context switching, which can degrade performance.
+However, too many workers can lead to resource contention and increased context switching, which can degrade performance.
 
 Here's an example of how you might configure the worker settings in `postgresql.conf`:
 
