@@ -30,6 +30,7 @@ additional-css = [
     "src/assets/remove-nav-buttons.css",
     "src/assets/indent-section-headers.css",
     "src/assets/whichlang.css",
+    "src/assets/custom.css",
 ]
 additional-js = ["src/assets/table-of-contents.js", "src/assets/whichlang.js"]
 
