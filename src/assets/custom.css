@@ -1,6 +1,26 @@
 /*
  * Customisations added for tcpipuk.github.io
  */
+
 code {
   max-height: 30em;
+}
+
+/*
+ * Indents each chapter title in the left sidebar so that they aren't
+ * at the same level as the section headers.
+ */
+
+.chapter-item {
+  margin-left: 1em;
+}
+
+/* Remove the prev, next chapter buttons as they interfere with the
+ * table of contents.
+ * Note that the table of contents only appears on desktop, thus we
+ * only remove the desktop (wide) chapter buttons.
+ */
+
+.nav-wide-wrapper {
+  display: none;
 }
