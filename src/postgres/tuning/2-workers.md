@@ -17,20 +17,18 @@ For Synapse and PostgreSQL, the goal is to strike a balance: we want to ensure t
 
 ### Tuning Workers to CPU Cores
 
-The number of workers in PostgreSQL is closely tied to the number of available CPU cores because each worker process can perform tasks concurrently on a separate core.
-
-However, too many workers can lead to resource contention and increased context switching, which can degrade performance.
+The number of workers in PostgreSQL is closely tied to the number of available CPU cores because each worker process can perform tasks concurrently on a separate core. However, too many workers can lead to resource contention and increased context switching, which can degrade performance.
 
 Here's an example of how you might configure the worker settings in `postgresql.conf`:
 
 ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Maximum number of workers in total, including maintenance and replication
 # (typically the number of CPU cores you have)
-max_worker_processes = 16
+max_worker_processes = 8
 
 # Maximum number of workers in total that can be used for queries
 # (capped by max_worker_processes, so typically the same number)
-max_parallel_workers = 16
+max_parallel_workers = 8
 
 # Maximum number of workers that can be used for a single query
 # (typically a quarter of the total workers)
@@ -38,12 +36,14 @@ max_parallel_workers_per_gather = 4
 
 # Maximum number of workers that can be used for maintenance operations
 # (typically an eighth to a quarter of the total workers)
-max_parallel_maintenance_workers = 4
+max_parallel_maintenance_workers = 2
 ```
 
 Postgres is generally reliable at choosing how many workers to use, but doesn't necessarily understand the profile of the work you're expecting from it each day, as it doesn't understand how your application (in this case Synapse) is designed.
 
-When all workers are busy, Postgres will queue incoming queries until workers are available, which delays those queries being answered, so you may be tempted to set `max_parallel_workers_per_gather = 1` to ensure more queries are handled immediately. However, if one query requires a lock on a table, then all other workers would need to wait to access that data, so in the Synapse case it's better to use parallelism when possible to speed up complex queries, rather than trying to enable the maximum amount of queries to be running at the same time.
+For example, when all workers are busy, Postgres will queue incoming queries until workers are available, which delays those queries being answered. You might be tempted to set `max_parallel_workers_per_gather = 1` to ensure more queries are handled immediately, but then if one query requires a lock on a table, all other workers would need to wait to access that data.
+
+In this Synapse case, it's generally better to use parallelism when possible to speed up complex queries, rather than trying to enable the maximum amount of queries to be running at the same time.
 
 ### Checks and Adjustments
 
