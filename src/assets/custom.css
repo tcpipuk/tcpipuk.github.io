@@ -1,26 +1,20 @@
-/*
- * Customisations added for tcpipuk.github.io
- */
+/* Wider page on desktop */
+:root {
+  --page-padding: 0;
+  --content-max-width: 50em;
+}
 
+/* Hide prev/next buttons on desktop mode */
+.nav-wide-wrapper {
+  display: none;
+}
+
+/* Limit max height of code blocks */
 code {
   max-height: 30em;
 }
 
-/*
- * Indents each chapter title in the left sidebar so that they aren't
- * at the same level as the section headers.
- */
-
+/* Indent menu subheadings from headings */
 .chapter-item {
-  margin-left: 1em;
-}
-
-/* Remove the prev, next chapter buttons as they interfere with the
- * table of contents.
- * Note that the table of contents only appears on desktop, thus we
- * only remove the desktop (wide) chapter buttons.
- */
-
-.nav-wide-wrapper {
-  display: none;
+  margin-left: 0.5em;
 }
