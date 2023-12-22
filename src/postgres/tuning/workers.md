@@ -45,33 +45,7 @@ For example, when all workers are busy, Postgres will queue incoming queries unt
 
 In this Synapse case, it's generally better to use parallelism when possible to speed up complex queries, rather than trying to enable the maximum amount of queries to be running at the same time.
 
-### Checks and Adjustments
-
-#### Enabling Statistics Modules
-
-1. Open your `postgresql.conf` file, search for the `shared_preload_libraries` setting, then add `pg_buffercache,pg_stat_statements` to its value (making sure to comma-separate each entry).
-
-   If it's not present, simply add the following line:
-
-   ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
-   shared_preload_libraries = 'pg_buffercache,pg_stat_statements'
-   ```
-
-2. Restart the PostgreSQL server for the changes to take effect, then run these queries:
-
-   ```sql,icon=.devicon-postgresql-plain,filepath=psql
-   CREATE EXTENSION IF NOT EXISTS pg_buffercache;
-   CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-   ```
-
-**Note:** These extensions cause PostgreSQL to use slightly more shared memory, and consume a few percent higher CPU time. There's no harm leaving them running, but as we're tuning for maximum performance, you may wish to disable them again after our investigation with these queries:
-
-```sql,icon=.devicon-postgresql-plain,filepath=psql
-DROP EXTENSION IF EXISTS pg_buffercache;
-DROP EXTENSION IF EXISTS pg_stat_statements;
-```
-
-#### Monitor CPU Utilisation
+### Monitor CPU Utilisation
 
 Use tools like `top`, `htop`, or `vmstat` to monitor CPU usage, or `docker stats` if using Docker. If the CPU utilisation of Postgres never exceeds 50-60%, consider reducing the number of workers to free up resources for Synapse and other processes.
 
@@ -90,33 +64,6 @@ LIMIT 10;
 ```
 
 This should show the top 10 queries that consumed the most time on average, including the amount of times that query was called, and the total execution time taken. The longest queries are usually not the most common, but by comparing the average time before and after a change at each stage, you can gauge the impact of your optimisations.
-
-#### Resetting Statistics
-
-To reset the statistics collected by `pg_stat_statements`, you can execute the following command:
-
-```sql,icon=.devicon-postgresql-plain,filepath=psql
-SELECT pg_stat_reset();
-```
-
-If your server has been running a long time, it's definitely worth running this to ensure you're looking at fresh numbers.
-
-You can check when the stats were last reset for each database using a query like this:
-
-```sql,icon=.devicon-postgresql-plain,filepath=psql
-SELECT datname AS database,
-       stats_reset AS stats_last_reset
-FROM pg_stat_database
-WHERE datname
-NOT LIKE 'template%';
-
-  datname  |          stats_reset
------------+-------------------------------
- synapse   | 2023-12-22 12:13:28.708593+00
-(1 row)
-```
-
-(Note: An empty value here would mean the stats have never been reset, according to PostgreSQL's records)
 
 ### Balance with Synapse
 
