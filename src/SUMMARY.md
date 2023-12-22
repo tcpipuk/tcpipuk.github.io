@@ -11,7 +11,6 @@
 - [PostgreSQL](postgres/README.md)
   - [Tuning](postgres/tuning/README.md)
     - [Statistics Modules](postgres/tuning/statistics.md)
-    - [Network Configuration](postgres/tuning/network.md)
     - [Worker Configuration](postgres/tuning/workers.md)
     - [Memory Configuration](postgres/tuning/memory.md)
     - [Query Planner Configuration](postgres/tuning/planner.md)

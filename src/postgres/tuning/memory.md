@@ -74,18 +74,27 @@ effective_cache_size = '8GB'
 
 This is not a setting that allocates memory, but rather an help the planner make more informed decisions about query execution. This helps PostgreSQL understand how much memory can be used for caching and can influence decisions such as whether to use an index scan or a sequential scan.
 
-For example, using the `top` command, you might see:
+For example, using the `free` command, you might see:
+
+```bash,icon=.devicon-bash-plain,filepath=top
+# free -h
+               total        used        free      shared  buff/cache   available
+Mem:            62Gi        23Gi       3.4Gi       5.5Gi        35Gi        32Gi
+Swap:          8.0Gi       265Mi       7.7Gi
+```
+
+Or using the `top` command, you might see:
 
 ```bash,icon=.devicon-bash-plain,filepath=top
 # top -n1 | head -n5
-top - 20:06:16 up 3 days,  5:51,  7 users,  load average: 1.76, 2.03, 2.04
-Tasks: 1018 total,   1 running, 1017 sleeping,   0 stopped,   0 zombie
-%Cpu(s):  2.7 us,  0.8 sy,  0.0 ni, 96.3 id,  0.2 wa,  0.0 hi,  0.0 si,  0.0 st
-MiB Mem :  64100.6 total,  10987.5 free,   8055.1 used,  45058.0 buff/cache
-MiB Swap:   8192.0 total,   8038.0 free,    154.0 used.  52557.0 avail Mem
+top - 15:20:35 up 14:26,  1 user,  load average: 0.67, 1.92, 2.58
+Threads: 5240 total,   1 running, 5239 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  1.6 us,  1.5 sy,  0.0 ni, 96.8 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :  64082.5 total,   3382.0 free,  24445.6 used,  36254.9 buff/cache
+MiB Swap:   8192.0 total,   7926.7 free,    265.2 used.  33243.2 avail Mem
 ```
 
-Here, although only 10GB is "free", 45GB is being used by the OS for cache. By setting `effective_cache_size` to a value that reflects this available cache, PostgreSQL can better estimate whether to try accessing the disk, knowing the data is likely to be answered directly from the memory instead.
+Here, although only about 3GB is "free", around 36GB is being used by the OS for cache. By setting `effective_cache_size` to a value that reflects this available cache, PostgreSQL can better estimate whether to try accessing the disk, knowing the data is likely to be answered directly from the memory instead.
 
 ### Working Memory
 
