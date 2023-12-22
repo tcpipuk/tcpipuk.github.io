@@ -42,7 +42,7 @@ FROM pg_stat_database
 WHERE datname
 NOT LIKE 'template%';
 
-  datname  |          stats_reset
+ database  |       stats_last_reset
 -----------+-------------------------------
  synapse   | 2023-12-22 12:13:28.708593+00
 (1 row)
