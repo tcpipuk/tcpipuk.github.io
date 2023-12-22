@@ -96,10 +96,27 @@ This should show the top 10 queries that consumed the most time on average, incl
 To reset the statistics collected by `pg_stat_statements`, you can execute the following command:
 
 ```sql,icon=.devicon-postgresql-plain,filepath=psql
-SELECT pg_stat_statements_reset();
+SELECT pg_stat_reset();
 ```
 
 If your server has been running a long time, it's definitely worth running this to ensure you're looking at fresh numbers.
+
+You can check when the stats were last reset for each database using a query like this:
+
+```sql,icon=.devicon-postgresql-plain,filepath=psql
+SELECT datname AS database,
+       stats_reset AS stats_last_reset
+FROM pg_stat_database
+WHERE datname
+NOT LIKE 'template%';
+
+  datname  |          stats_reset
+-----------+-------------------------------
+ synapse   | 2023-12-22 12:13:28.708593+00
+(1 row)
+```
+
+(Note: An empty value here would mean the stats have never been reset, according to PostgreSQL's records)
 
 ### Balance with Synapse
 
