@@ -399,6 +399,8 @@ location /_synapse/ {
 
 It starts by forcing some requests to go directly to the main thread, as workers aren't ready to handle them yet, and then for each type of request (federation/client) we send specialised requests to specialised workers, otherwise send any request with a room ID to the "room workers" and whatever's left goes to our dedicated federation/client reader.
 
+You may also notice that the special "stream" endpoints all go to the `synapse_inbound_client_syncs` group - if you have multiple sync workers, you'll need to split this out to a separate worker for stream writing, but for a small number of clients (e.g. a home install) it's best for performance to keep the caches with your sync workers to maximise caching and minimise queries to your database.
+
 ### proxy.conf
 
 You may have noticed we used "proxy.conf" many times above. We do this to quickly define standard proxy config, which could easily be overriden per location block if needed later:
