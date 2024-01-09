@@ -24,6 +24,7 @@ Example Docker Compose deployment:
     image: nginx:mainline-alpine-slim
     ports:
       - "8008:8008"
+      - "8448:8448"
     tmpfs:
       - /var/cache/nginx/client_temp
     volumes:
