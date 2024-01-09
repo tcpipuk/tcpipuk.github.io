@@ -1,8 +1,20 @@
 # Deploying a Synapse Homeserver with Docker
 
+1. [Docker Compose with Templates](#docker-compose-with-templates)
+2. [Environment Files](#environment-files)
+3. [YAML Templating](#yaml-templating)
+4. [Unix Sockets](#unix-sockets)
+5. [Redis](#redis)
+6. [PostgreSQL Database](#postgresql-database)
+7. [Synapse](#synapse)
+
 ## Docker Compose with Templates
 
-### Environment Files
+If Docker is not already installed, visit [the official guide](https://docs.docker.com/engine/install/#supported-platforms) and select the correct operating system to install Docker Engine.
+
+Once complete, you should now be ready with the latest version of Docker, and can continue the guide.
+
+## Environment Files
 
 Before creating the Docker Compose configuration itself, let's define the environment variables for them:
 
@@ -25,7 +37,7 @@ Before creating the Docker Compose configuration itself, let's define the enviro
   POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
   ```
 
-### YAML Templating
+## YAML Templating
 
 Using [YAML Anchors](https://yaml.org/spec/1.2.2/#3222-anchors-and-aliases) lets you cut down the repeated lines in the config and simplify updating values uniformly.
 
@@ -99,7 +111,7 @@ x-postgres-template: &postgres-template
 
 Now this is done, we're ready to start actually defining resources!
 
-### Unix Sockets
+## Unix Sockets
 
 If all of your containers live on the same physical server, you can take advantage of [Unix sockets](https://en.wikipedia.org/wiki/Unix_domain_socket) to bypass the entire network stack when containers need to talk to each other.
 
@@ -133,7 +145,7 @@ services:
       - sockets:/sockets
 ```
 
-### Redis
+## Redis
 
 To use sockets, Redis requires an adjustment to the launch command, so we'll define that here:
 
@@ -148,7 +160,7 @@ To use sockets, Redis requires an adjustment to the launch command, so we'll def
       - ./redis:/data
 ```
 
-### PostgreSQL Database
+## PostgreSQL Database
 
 Now we can define our PostgreSQL database:
 
@@ -180,7 +192,7 @@ And if you're following [my backups guide](../../postgres/backups/README.md), it
 
 You can change the paths from "pgsql" or "pgrep" if you prefer, just make sure to do it before starting the first time, or you'll need to rename the directory on disk at the same time to avoid any data loss.
 
-### Synapse
+## Synapse
 
 With all of our templates above, Synapse itself is this easy:
 
