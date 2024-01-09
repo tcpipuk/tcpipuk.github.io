@@ -2,6 +2,14 @@
 
 ## Synapse Configuration
 
+1. [Synapse Configuration](#synapse-configuration)
+2. [Default File](#default-file)
+3. [Log Config](#log-config)
+4. [Homeserver Config](#homeserver-config)
+5. [Cache Optimisation](#cache-optimisation)
+
+## Default File
+
 Before we can modify the Synapse config, we need to create it.
 
 Run this command to launch Synapse only to generate the config file and then close again:
@@ -22,7 +30,7 @@ total 16K
 
 The signing key is unique to your server and is vital to maintain for other servers to trust yours in the future. You can wipe the entire database and still be able to federate with other servers if your signing key is the same, so it's worthwhile backing this up now.
 
-### Log Config
+## Log Config
 
 For the log config, by default this is very barebones and just logs straight to console, but you could replace it with something like this to keep a daily log for the past 3 days in your "logs" folder:
 
@@ -64,7 +72,7 @@ root:
     handlers: [buffer]
 ```
 
-### Homeserver Config
+## Homeserver Config
 
 By default, this file is quite short and not terribly well organised. There is no harm adding blank lines between entries here to make it more readable, or adding comments (starting with the # hash character) to explain what lines mean.
 
@@ -155,11 +163,12 @@ federation_ip_range_blacklist: # IP address ranges to forbid for federation
   - 'fe80::/64'
 
 # Cache Configuration
-event_cache_size: 10K
+event_cache_size: 50K
 caches:
-  global_factor: 10
+  global_factor: 2
   expire_caches: true
-  cache_entry_ttl: 120m
+  cache_entry_ttl: 480m
+  sync_response_cache_duration: 2m
   cache_autotuning:
     max_cache_memory_usage: 2048M
     target_cache_memory_usage: 1024M
@@ -245,3 +254,37 @@ recaptcha_public_key: "SuperSecretValue4" # Public key for reCAPTCHA
 recaptcha_private_key: "SuperSecretValue5" # Private key for reCAPTCHA
 worker_replication_secret: "SuperSecretValue6" # Secret for communication between Synapse and workers
 ```
+
+## Cache Optimisation
+
+Most of the example configuration above is fairly standard, however of particular note to performance tuning is the cache configuration.
+
+The defaults (at time of writing) are below and in the official documentation at [event_cache_size](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#event_cache_size) and [caches](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#caches-and-associated-values):
+
+```yaml,filepath=homeserver.yaml
+event_cache_size: 10K
+caches:
+  global_factor: 0.5
+  expire_caches: true
+  cache_entry_ttl: 30m
+  sync_response_cache_duration: 2m
+```
+
+In this default case, all of the caches (including the `event_cache_size`) are halved (so each worker can only actually hold 5,000 events as a maximum), every entry in the cache expires within 30 minutes, and `cache_autotuning` is disabled, so entries only leave the cache after 30 minutes or when the server needs to cache something and there isn't enough space to store it. A less-than-ideal setup in most self-hosting situations!
+
+The example I have provided is this, which allows each cache to be double the size (so `event_cache_size` becomes 100K internally) and entries are allowed to remain in cache for up to 8 hours if they're regularly used, but `cache_autotuning` will allow anything older than 5 minutes to be removed from cache if it's not in use:
+
+```yaml,filepath=homeserver.yaml
+event_cache_size: 50K
+caches:
+  global_factor: 2
+  expire_caches: true
+  cache_entry_ttl: 480m
+  sync_response_cache_duration: 2m
+  cache_autotuning:
+    max_cache_memory_usage: 2048M
+    target_cache_memory_usage: 1024M
+    min_cache_ttl: 5m
+```
+
+This behaviour varies slightly depending on your kernel, but in my case I see caches clearing before the `target_cache_memory_usage` is reached, and many of my workers sit around 110-130MB memory usage most of the time.

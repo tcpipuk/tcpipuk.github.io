@@ -2,6 +2,12 @@
 
 ## PostgreSQL Configuration
 
+1. [PostgreSQL Configuration](#postgresql-configuration)
+2. [Creating Database](#creating-database)
+3. [Configuring PostgreSQL](#configuring-postgresql)
+
+## Creating Database
+
 Before we can modify the PostgreSQL config, we need to let the container generate it, so for now (whether you're deploying a single database or a replica too) just start the primary database like this:
 
 ```bash
@@ -20,6 +26,8 @@ PostgreSQL init process complete; ready for start up.
 2023-12-20 22:58:57.699 UTC [51] LOG:  database system was shut down at 2023-12-20 22:58:57 UTC
 2023-12-20 22:58:57.707 UTC [1] LOG:  database system is ready to accept connections
 ```
+
+## Configuring PostgreSQL
 
 Now you can hit Ctrl+C to close it, and you should find a "psql16" folder now exists with a "postgresql.conf" file inside it. I recommend removing it entirely and replacing with this:
 
