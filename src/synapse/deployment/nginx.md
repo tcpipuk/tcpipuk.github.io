@@ -271,7 +271,7 @@ map $http_upgrade $connection_upgrade {
 
 #Extract room name from URI
 map $request_uri $room_name {
-  ~^/_matrix/(client|federation)/.*?(?:%21|!)(?<room>[A-Za-z0-9._=\-\/]+)(:|%3A)[A-Za-z0-9.\-]+ $room;
+  ~^/_matrix/(client|federation)/.*?(?:%21|!)(?<room>[A-Za-z0-9._=\-\/]+)(?::|%3A)[A-Za-z0-9._=\-\/]+ $room;
 }
 ```
 
