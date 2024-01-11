@@ -44,7 +44,7 @@ I recommend splitting up the config into more manageable files, so next to my `d
 ```bash
 docker-compose.yml
 nginx
-├── config
+└── config
     ├── locations.conf
     ├── maps.conf
     ├── nginx.conf
@@ -271,7 +271,7 @@ map $http_upgrade $connection_upgrade {
 
 #Extract room name from URI
 map $request_uri $room_name {
-  ~^/_matrix/(client|federation)/.*?(?:%21|!)(?<room>[A-Za-z0-9._=\-\/]+:[A-Za-z0-9.\-]+) $room;
+  ~^/_matrix/(client|federation)/.*?(?:%21|!)(?<room>[A-Za-z0-9._=\-\/]+)(:|%3A)[A-Za-z0-9.\-]+ $room;
 }
 ```
 
@@ -283,7 +283,7 @@ This is the biggest file, and defines which URIs go to which upstream:
 ### MAIN OVERRIDES ###
 
 # Client: Main overrides
-location ~ ^/_matrix/client/(api/v1|r0|v3|unstable)/(account/3pid/|directory/list/room/|pushrules/|rooms/[^/]+/forget|login/sso/redirect/|register) {
+location ~ ^/_matrix/client/(api/v1|r0|v3|unstable)/(account/3pid/|directory/list/room/|pushrules/|rooms/[^/]+/(forget|upgrade)|login/sso/redirect/|register) {
   set $proxy_pass http://synapse_inbound_main;
   include proxy.conf;
 }
@@ -303,7 +303,7 @@ location ~ ^/_matrix/federation/v1/openid/userinfo$ {
 ### FEDERATION ###
 
 # Federation rooms
-location ~ ^/_matrix/federation/v[12]/(?:state_ids|get_missing_events)/(?:%21|!)(?<room>[A-Za-z0-9._=\-\/]+:[A-Za-z0-9.\-]+) {
+location ~ ^/_matrix/federation/v[12]/(?:state_ids|get_missing_events)/(?:%21|!)(?<room>[A-Za-z0-9._=\-\/]+)(:|%3A)[A-Za-z0-9.\-]+ {
   set $proxy_pass http://synapse_inbound_room_workers;
   include proxy.conf;
 }
@@ -353,7 +353,7 @@ location ~ ^/_matrix/client/(api/v1|r0|v3|unstable)/user_directory/search {
 }
 
 # Client: Rooms
-location ~ ^/_matrix/client/.*?(?<room>![A-Za-z0-9._=\-\/]+:[A-Za-z0-9.\-]+) {
+location ~ ^/_matrix/client/.*?!(?<room>[A-Za-z0-9._=\-\/]+):[A-Za-z0-9.\-]+ {
   set $proxy_pass http://synapse_inbound_room_workers;
   include proxy.conf;
 }
