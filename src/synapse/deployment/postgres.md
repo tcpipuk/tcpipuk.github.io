@@ -29,7 +29,9 @@ PostgreSQL init process complete; ready for start up.
 
 ## Configuring PostgreSQL
 
-Now you can hit Ctrl+C to close it, and you should find a "psql16" folder now exists with a "postgresql.conf" file inside it. I recommend removing it entirely and replacing with this:
+Now you can hit Ctrl+C to close it, and you should find a "psql16" folder now exists with a "postgresql.conf" file inside it.
+
+I recommend removing it entirely and replacing it with a template of selected values like this:
 
 ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Network
@@ -50,8 +52,8 @@ effective_cache_size = 40GB
 effective_io_concurrency = 200
 maintenance_work_mem = 1GB
 shared_buffers = 4GB
-wal_buffers = 128MB
-work_mem = 128MB
+wal_buffers = 32MB
+work_mem = 32MB
 
 # Query Planning
 enable_partitionwise_join = on
@@ -101,7 +103,7 @@ timezone = 'Europe/London'
 #shared_preload_libraries = 'pg_buffercache,pg_stat_statements'
 ```
 
-This is quite a high spec configuration, designed for a server with over 16 cores and 64GB RAM and using SSD storage, so you may wish to consult [my tuning guide](../../postgres/tuning/2-workers.md) to decide on the best amount of workers and cache for your situation.
+This is quite a high spec configuration, designed for a server with over 16 cores and 64GB RAM and using SSD storage, so you may wish to consult [my tuning guide](../../postgres/tuning/workers.md) to decide on the best amount of workers and cache for your situation.
 
 If in doubt, it's better to be _more_ conservative, and increase values over time as needed - on a quad-core server with 8GB RAM, these would be reasonable values to start:
 
@@ -119,5 +121,5 @@ effective_io_concurrency = 200
 maintenance_work_mem = 512MB
 shared_buffers = 1GB
 wal_buffers = 32MB
-work_mem = 32MB
+work_mem = 28MB
 ```
