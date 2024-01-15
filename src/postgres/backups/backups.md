@@ -9,22 +9,39 @@ I've written the following to take a backup - the files are automatically compre
 
 # Define backup directory, filenames, and the number of backups to keep
 BACKUP_DIR="/path/to/backups"
-CURRENT_BACKUP="$BACKUP_DIR/backup_$(date +%Y%m%d%H%M).sql.gz"
+CURRENT_BACKUP_DIR="$BACKUP_DIR/backup_$(date +%Y%m%d%H%M)"
+CURRENT_BACKUP_ARCHIVE="$CURRENT_BACKUP_DIR.tar.gz"
 NUM_BACKUPS_TO_KEEP=6
 
-# Take the backup and compress it using gzip
-docker exec synapse-db-replica-1 pg_dump -h /sockets -U synapse -d synapse | gzip > $CURRENT_BACKUP
+# Create a new backup using pg_basebackup
+mkdir -p $CURRENT_BACKUP_DIR
+docker exec synapse-db-replica-1 pg_basebackup -h /sockets -U synapse -D $CURRENT_BACKUP_DIR -Fp
 
 # Check if the backup was successful
 if [ $? -eq 0 ]; then
-    echo "Backup successful!"
-    # Check if previous backups exist and manage them
-    ...
+    echo "Backup successful! Compressing the backup directory..."
+    
+    # Compress the backup directory
+    tar -czf $CURRENT_BACKUP_ARCHIVE -C $CURRENT_BACKUP_DIR .
+    rm -rf $CURRENT_BACKUP_DIR
+
+    # Check if previous backups exist
+    if [ -n "$(ls $BACKUP_DIR/backup_*.tar.gz 2>/dev/null)" ]; then
+        PREVIOUS_BACKUPS=($(ls $BACKUP_DIR/backup_*.tar.gz | sort -r))
+
+        # If there are more backups than the specified number, delete the oldest ones
+        if [ ${#PREVIOUS_BACKUPS[@]} -gt $NUM_BACKUPS_TO_KEEP ]; then
+            for i in $(seq $(($NUM_BACKUPS_TO_KEEP + 1)) ${#PREVIOUS_BACKUPS[@]}); do
+                rm -f ${PREVIOUS_BACKUPS[$i-1]}
+            done
+        fi
+    fi
 else
     echo "Backup failed!"
-    rm $CURRENT_BACKUP
+    rm -rf $CURRENT_BACKUP_DIR
 fi
 ```
+
 
 To configure, simply set the `BACKUP_DIR` to the location you want your backups to be stored, the `NUM_BACKUPS_TO_KEEP` to the number of previous backups to store before removal, and update the `docker exec` line to match your replica's details.
 
