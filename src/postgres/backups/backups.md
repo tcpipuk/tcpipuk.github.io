@@ -25,13 +25,21 @@ if [ $? -eq 0 ]; then
     tar -czf $CURRENT_BACKUP_ARCHIVE -C $CURRENT_BACKUP_DIR .
     rm -rf $CURRENT_BACKUP_DIR
 
-    # Check if previous backups exist and manage them
-    ...
+    # Check if previous backups exist
+    if [ -n "$(ls $BACKUP_DIR/backup_*.sql.gz 2>/dev/null)" ]; then
+        PREVIOUS_BACKUPS=($(ls $BACKUP_DIR/backup_*.sql.gz | sort -r))
+
+        # If there are more backups than the specified number, delete the oldest ones        if [ ${#PREVIOUS_BACKUPS[@]} -gt $NUM_BACKUPS_TO_KEEP ]; then
+            for i in $(seq $(($NUM_BACKUPS_TO_KEEP + 1)) ${#PREVIOUS_BACKUPS[@]}); do                rm ${PREVIOUS_BACKUPS[$i-1]}
+            done
+        fi
+    fi
 else
     echo "Backup failed!"
-    rm -rf $CURRENT_BACKUP_DIR
+    rm $CURRENT_BACKUP
 fi
 ```
+
 
 To configure, simply set the `BACKUP_DIR` to the location you want your backups to be stored, the `NUM_BACKUPS_TO_KEEP` to the number of previous backups to store before removal, and update the `docker exec` line to match your replica's details.
 
