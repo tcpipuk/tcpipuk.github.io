@@ -26,17 +26,19 @@ if [ $? -eq 0 ]; then
     rm -rf $CURRENT_BACKUP_DIR
 
     # Check if previous backups exist
-    if [ -n "$(ls $BACKUP_DIR/backup_*.sql.gz 2>/dev/null)" ]; then
-        PREVIOUS_BACKUPS=($(ls $BACKUP_DIR/backup_*.sql.gz | sort -r))
+    if [ -n "$(ls $BACKUP_DIR/backup_*.tar.gz 2>/dev/null)" ]; then
+        PREVIOUS_BACKUPS=($(ls $BACKUP_DIR/backup_*.tar.gz | sort -r))
 
-        # If there are more backups than the specified number, delete the oldest ones        if [ ${#PREVIOUS_BACKUPS[@]} -gt $NUM_BACKUPS_TO_KEEP ]; then
-            for i in $(seq $(($NUM_BACKUPS_TO_KEEP + 1)) ${#PREVIOUS_BACKUPS[@]}); do                rm ${PREVIOUS_BACKUPS[$i-1]}
+        # If there are more backups than the specified number, delete the oldest ones
+        if [ ${#PREVIOUS_BACKUPS[@]} -gt $NUM_BACKUPS_TO_KEEP ]; then
+            for i in $(seq $(($NUM_BACKUPS_TO_KEEP + 1)) ${#PREVIOUS_BACKUPS[@]}); do
+                rm -f ${PREVIOUS_BACKUPS[$i-1]}
             done
         fi
     fi
 else
     echo "Backup failed!"
-    rm $CURRENT_BACKUP
+    rm -rf $CURRENT_BACKUP_DIR
 fi
 ```
 
