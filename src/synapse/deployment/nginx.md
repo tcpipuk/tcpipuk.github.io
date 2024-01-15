@@ -346,6 +346,9 @@ location ~ ^/_matrix/client/(api/v1|r0|v3|unstable)/rooms/.*/typing {
   include proxy.conf;
 }
 
+# Note: The following client blocks must come *after* the stream blocks above
+otherwise some stream requests would be incorrectly routed
+
 # Client: User directory
 location ~ ^/_matrix/client/(api/v1|r0|v3|unstable)/user_directory/search {
   set $proxy_pass http://synapse_inbound_client_syncs;
