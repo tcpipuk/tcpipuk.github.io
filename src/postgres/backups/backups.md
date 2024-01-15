@@ -9,20 +9,27 @@ I've written the following to take a backup - the files are automatically compre
 
 # Define backup directory, filenames, and the number of backups to keep
 BACKUP_DIR="/path/to/backups"
-CURRENT_BACKUP="$BACKUP_DIR/backup_$(date +%Y%m%d%H%M).sql.gz"
+CURRENT_BACKUP_DIR="$BACKUP_DIR/backup_$(date +%Y%m%d%H%M)"
+CURRENT_BACKUP_ARCHIVE="$CURRENT_BACKUP_DIR.tar.gz"
 NUM_BACKUPS_TO_KEEP=6
 
-# Take the backup and compress it using gzip
-docker exec synapse-db-replica-1 pg_dump -h /sockets -U synapse -d synapse | gzip > $CURRENT_BACKUP
+# Create a new backup using pg_basebackup
+mkdir -p $CURRENT_BACKUP_DIR
+docker exec synapse-db-replica-1 pg_basebackup -h /sockets -U synapse -D $CURRENT_BACKUP_DIR -Fp
 
 # Check if the backup was successful
 if [ $? -eq 0 ]; then
-    echo "Backup successful!"
+    echo "Backup successful! Compressing the backup directory..."
+    
+    # Compress the backup directory
+    tar -czf $CURRENT_BACKUP_ARCHIVE -C $CURRENT_BACKUP_DIR .
+    rm -rf $CURRENT_BACKUP_DIR
+
     # Check if previous backups exist and manage them
     ...
 else
     echo "Backup failed!"
-    rm $CURRENT_BACKUP
+    rm -rf $CURRENT_BACKUP_DIR
 fi
 ```
 
