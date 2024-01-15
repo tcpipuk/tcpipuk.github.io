@@ -1,6 +1,6 @@
 # Tuning PostgreSQL for a Matrix Synapse Homeserver
 
-## 1. Network Configuration
+## Network Configuration
 
 Choosing the optimal communication method between Synapse and PostgreSQL is essential for performance. There are two primary methods to consider: Unix sockets and TCP ports. Let's explore how to configure each one.
 

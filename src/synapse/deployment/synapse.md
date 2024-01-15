@@ -74,9 +74,9 @@ root:
 
 ## Homeserver Config
 
-By default, this file is quite short and not terribly well organised. There is no harm adding blank lines between entries here to make it more readable, or adding comments (starting with the # hash character) to explain what lines mean.
+By default, this file is quite short and relies a lot on defaults. There is no harm adding blank lines between entries here to make it more readable, or adding comments (starting with the # hash character) to explain what lines mean.
 
-**Note: The "secret" or "key" lines are unique to your server and things may misbehave if you change some of them after the server is running.** It's generally best to leave them safe at the bottom of the file while you work on the other values.
+**Note: The "secret" or "key" lines are unique to your server and things are likely to misbehave if you change some of them after the server is running.** It's generally best to leave them safe at the bottom of the file while you work on the other values.
 
 Here's an example with comments you may wish to use to start with some safe defaults:
 
@@ -165,14 +165,22 @@ federation_ip_range_blacklist: # IP address ranges to forbid for federation
 # Cache Configuration
 event_cache_size: 50K
 caches:
-  global_factor: 2
+  global_factor: 1.5
   expire_caches: true
-  cache_entry_ttl: 480m
+  cache_entry_ttl: 1080m
   sync_response_cache_duration: 2m
+  per_cache_factors:
+    get_current_hosts_in_room: 3
+    get_local_users_in_room: 3
+    get_partial_current_state_ids: 0.5
+    _get_presence_for_user: 3
+    get_rooms_for_user: 3
+    stateGroupCache: 0.2
+    stateGroupMembersCache: 0.3
   cache_autotuning:
-    max_cache_memory_usage: 2048M
-    target_cache_memory_usage: 1024M
-    min_cache_ttl: 5m
+    max_cache_memory_usage: 896M
+    target_cache_memory_usage: 512M
+    min_cache_ttl: 1m
 
 # Media Configuration
 media_store_path: "/media" # Path where media files will be stored
@@ -255,6 +263,8 @@ recaptcha_private_key: "SuperSecretValue5" # Private key for reCAPTCHA
 worker_replication_secret: "SuperSecretValue6" # Secret for communication between Synapse and workers
 ```
 
+In this case, I've included typical configuration for [Authentik](https://goauthentik.io/integrations/services/matrix-synapse/) in case you want to use SSO instead of Synapse's built-in password database - it's perfectly safe to omit this `oidc_providers:` section if you're not using SSO, but [the official Authentik guide](https://goauthentik.io/integrations/services/matrix-synapse/) is quite quick and easy if you do wish to use it [after installing Authentik](https://goauthentik.io/docs/installation/docker-compose).
+
 ## Cache Optimisation
 
 Most of the example configuration above is fairly standard, however of particular note to performance tuning is the cache configuration.
@@ -270,21 +280,27 @@ caches:
   sync_response_cache_duration: 2m
 ```
 
-In this default case, all of the caches (including the `event_cache_size`) are halved (so each worker can only actually hold 5,000 events as a maximum), every entry in the cache expires within 30 minutes, and `cache_autotuning` is disabled, so entries only leave the cache after 30 minutes or when the server needs to cache something and there isn't enough space to store it. A less-than-ideal setup in most self-hosting situations!
+In this default case, all of the caches (including the `event_cache_size`) are halved (so each worker can only actually hold 5,000 events as a maximum), every entry in the cache expires within 30 minutes, and `cache_autotuning` is disabled, so entries only leave the cache after 30 minutes or when the server needs to cache something and there isn't enough space to store it. A less-than-ideal setup in the sort of high-performance self-hosting situation we're aiming for!
 
-The example I have provided is this, which allows each cache to be double the size (so `event_cache_size` becomes 100K internally) and entries are allowed to remain in cache for up to 8 hours if they're regularly used, but `cache_autotuning` will allow anything older than 5 minutes to be removed from cache if it's not in use:
+The example I have provided is this, which allows each cache to be 1.5x the size (so `event_cache_size` becomes 75K internally) and entries are allowed to remain in cache for up to 18 hours if they're regularly used, but `cache_autotuning` will allow anything older than 1 minutes to be removed from cache if the total size is growing large and that entry is not repeatedly used:
 
 ```yaml,filepath=homeserver.yaml
 event_cache_size: 50K
 caches:
-  global_factor: 2
+  global_factor: 1.5
   expire_caches: true
-  cache_entry_ttl: 480m
+  cache_entry_ttl: 1080m
   sync_response_cache_duration: 2m
+  per_cache_factors:
+    get_current_hosts_in_room: 3
+    get_local_users_in_room: 3
+    get_partial_current_state_ids: 0.5
+    _get_presence_for_user: 3
+    get_rooms_for_user: 3
+    stateGroupCache: 0.2
+    stateGroupMembersCache: 0.3
   cache_autotuning:
-    max_cache_memory_usage: 2048M
-    target_cache_memory_usage: 1024M
-    min_cache_ttl: 5m
+    max_cache_memory_usage: 896M
+    target_cache_memory_usage: 512M
+    min_cache_ttl: 1m
 ```
-
-This behaviour varies slightly depending on your kernel, but in my case I see caches clearing before the `target_cache_memory_usage` is reached, and many of my workers sit around 110-130MB memory usage most of the time.
