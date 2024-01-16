@@ -1,5 +1,9 @@
 # Deploying a Synapse Homeserver with Docker
 
+1. [Introduction](#introduction)
+2. [Model Explanation](#model-explanation)
+3. [Getting Started](#getting-started)
+
 ## Introduction
 
 Welcome to my deployment guide for setting up a Matrix Synapse Homeserver using Docker. Our setup focuses on scalability and efficiency, using multiple "workers" to distribute workload and enhance performance.

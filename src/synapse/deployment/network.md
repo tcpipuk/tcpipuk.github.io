@@ -2,9 +2,13 @@
 
 ## Network Configuration
 
+1. [Network Configuration](#network-configuration)
+2. [Unix Sockets](#unix-sockets)
+3. [TCP Ports](#tcp-ports)
+
 Choosing the optimal communication method between Synapse and PostgreSQL is essential for performance. There are two primary methods to consider: Unix sockets and TCP ports. Let's explore how to configure each one.
 
-### Unix Sockets
+## Unix Sockets
 
 Unix sockets provide a high-speed communication channel between processes on the same machine, bypassing the network stack and reducing latency. This method is ideal when both Synapse and PostgreSQL are hosted on the same system. Here's how to set it up:
 
@@ -33,7 +37,7 @@ Unix sockets provide a high-speed communication channel between processes on the
 
    **Note**: Do **not** include the socket filename as Postgres auto-generates the name based on the port number. This also means that, if you've changed the default port number in either Synapse or PostgreSQL, you must ensure these fields remain after switching to sockets, so both applications generate and look for the correct socket name.
 
-### TCP Ports
+## TCP Ports
 
 When Synapse and PostgreSQL are on different hosts or when Unix sockets are not an option, TCP ports are used for communication. This method is more versatile and allows for distributed setups. Here's how to configure TCP communication:
 
