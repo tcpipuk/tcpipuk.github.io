@@ -176,17 +176,16 @@ caches:
     _get_presence_for_user: 3
     get_rooms_for_user: 3
     _get_server_keys_json: 3
-    have_seen_event: 1
     stateGroupCache: 0.1
     stateGroupMembersCache: 0.2
   cache_autotuning:
-    max_cache_memory_usage: 1024M
+    max_cache_memory_usage: 896M
     target_cache_memory_usage: 512M
     min_cache_ttl: 30s
 
 # Garbage Collection (Cache Eviction)
-gc_thresholds: [600, 10, 10]
-gc_min_interval: [1s, 30s, 1m]
+gc_thresholds: [550, 10, 10]
+gc_min_interval: [1s, 1m, 2m]
 
 # Media Configuration
 media_store_path: "/media" # Path where media files will be stored
@@ -286,14 +285,25 @@ caches:
   sync_response_cache_duration: 2m
 ```
 
-In this default case, all of the caches (including the `event_cache_size`) are halved (so each worker can only actually hold 5,000 events as a maximum), every entry in the cache expires within 30 minutes, and `cache_autotuning` is disabled, so entries only leave the cache after 30 minutes or when the server needs to cache something and there isn't enough space to store it. A less-than-ideal setup in the sort of high-performance self-hosting situation we're aiming for!
+In this default case:
 
-The example I have provided is this, which allows each cache to be 1.5x the size (so `event_cache_size` becomes 75K internally) and entries are allowed to remain in cache for up to 18 hours if they're regularly used, but `cache_autotuning` will allow anything older than 1 minutes to be removed from cache if the total size is growing large and that entry is not repeatedly used:
+- All of the caches (including the `event_cache_size`) are halved (so each worker can only actually hold 5,000 events as a maximum)
+- Every entry in the cache expires within 30 minutes
+- `cache_autotuning` is disabled, so entries leave the cache after 30 minutes or when the server needs to cache something and there isn't enough space to store it.
+
+In particular, that last option is a problem, as we have multiple containers, so we don't want every container seeking to fill its caches to the max then waiting for the expiry time to lose entries that have only been read once!
+
+I've recommended the following config, which instead:
+
+- Increases the number of events we can cache to lower load on the database
+- Enable `cache_autotuning` to remove entries that aren't frequently accessed
+- Allow entries to stay in cache longer when they're used frequently
+- Modified the limit to expand caches that are frequently accessed by large federated rooms, and restricted ones that are less frequently reused
 
 ```yaml,filepath=homeserver.yaml
-event_cache_size: 50K
+event_cache_size: 30K
 caches:
-  global_factor: 1.5
+  global_factor: 1
   expire_caches: true
   cache_entry_ttl: 1080m
   sync_response_cache_duration: 2m
@@ -303,10 +313,18 @@ caches:
     get_partial_current_state_ids: 0.5
     _get_presence_for_user: 3
     get_rooms_for_user: 3
-    stateGroupCache: 0.2
-    stateGroupMembersCache: 0.3
+    _get_server_keys_json: 3
+    stateGroupCache: 0.1
+    stateGroupMembersCache: 0.2
   cache_autotuning:
     max_cache_memory_usage: 896M
     target_cache_memory_usage: 512M
-    min_cache_ttl: 1m
+    min_cache_ttl: 30s
+```
+
+Furthermore, as this is designed to be a server with more limited RAM, we've updated the "garbage collection" thresholds, so Synapse can quickly clean up older cached entries to make sure we're keeping a healthy amount of cache without running out of memory:
+
+```yaml,filepath=homeserver.yaml
+gc_thresholds: [550, 10, 10]
+gc_min_interval: [1s, 1m, 2m]
 ```
