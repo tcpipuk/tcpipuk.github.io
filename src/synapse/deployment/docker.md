@@ -68,7 +68,7 @@ x-medium-container: &medium-container
 
 x-large-container: &large-container
   <<: *container-template
-  cpus: 6
+  cpus: 4
   mem_limit: 8G
 ```
 
@@ -104,12 +104,12 @@ x-synapse-media-template: &synapse-media-template
     SYNAPSE_WORKER: synapse.app.media_repository
 
 x-postgres-template: &postgres-template
-  <<: *large-container
+  <<: *medium-container
   depends_on:
     - init-sockets
   image: postgres:16-alpine
   env_file: .postgres.env
-  shm_size: 2G
+  shm_size: 1G
 ```
 
 Now this is done, we're ready to start actually defining resources!

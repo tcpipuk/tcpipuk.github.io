@@ -163,9 +163,9 @@ federation_ip_range_blacklist: # IP address ranges to forbid for federation
   - 'fe80::/64'
 
 # Cache Configuration
-event_cache_size: 50K
+event_cache_size: 30K
 caches:
-  global_factor: 1.5
+  global_factor: 1
   expire_caches: true
   cache_entry_ttl: 1080m
   sync_response_cache_duration: 2m
@@ -175,12 +175,18 @@ caches:
     get_partial_current_state_ids: 0.5
     _get_presence_for_user: 3
     get_rooms_for_user: 3
-    stateGroupCache: 0.2
-    stateGroupMembersCache: 0.3
+    _get_server_keys_json: 3
+    have_seen_event: 1
+    stateGroupCache: 0.1
+    stateGroupMembersCache: 0.2
   cache_autotuning:
-    max_cache_memory_usage: 896M
+    max_cache_memory_usage: 1024M
     target_cache_memory_usage: 512M
-    min_cache_ttl: 1m
+    min_cache_ttl: 30s
+
+# Garbage Collection (Cache Eviction)
+gc_thresholds: [600, 10, 10]
+gc_min_interval: [1s, 30s, 1m]
 
 # Media Configuration
 media_store_path: "/media" # Path where media files will be stored

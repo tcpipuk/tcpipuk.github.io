@@ -190,51 +190,77 @@ Since we defined a "synapse-worker-template" and "synapse-media-template" in the
   client-sync1:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/client_sync1.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_replication_client_sync1.sock http://localhost/health
 
   federation-reader1:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/federation_reader1.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_inbound_federation_reader1.sock http://localhost/health
 
   media1:
     <<: *synapse-media-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/media1.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_replication_media1.sock http://localhost/health
 
   rooms1:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/rooms1.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_inbound_rooms1.sock http://localhost/health
 
   rooms2:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/rooms2.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_inbound_rooms2.sock http://localhost/health
 
   rooms3:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/rooms3.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_inbound_rooms3.sock http://localhost/health
 
   rooms4:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/rooms4.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_inbound_rooms4.sock http://localhost/health
 
   sender1:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/sender1.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_replication_sender1.sock http://localhost/health
 
   sender2:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/sender2.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_replication_sender2.sock http://localhost/health
 
   sender3:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/sender3.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_replication_sender3.sock http://localhost/health
 
   sender4:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/sender4.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_replication_sender4.sock http://localhost/health
 
   tasks1:
     <<: *synapse-worker-template
     command: run --config-path=/data/homeserver.yaml --config-path=/data/workers/tasks1.yaml
+    healthcheck:
+      test: curl -fSs --unix-socket /sockets/synapse_replication_tasks1.sock http://localhost/health
 ```
+
+The "healthcheck" sections just need to match the socket name from each worker's config file - the `/health` endpoint listens on both replication and inbound sockets, so you can use either, depending on what the worker has available. This allows Docker to test whether the container is running, so it can be automatically restarted if there are any issues.
 
 With all of the configuration sections above in place, and the [Nginx upstream configuration](./nginx.md#upstreamsconf) from the previous section, all you should need to do now is run `docker compose down && docker compose up -d` to bring up Synapse with the new configuration and a much higher capacity!
 
@@ -254,16 +280,16 @@ graph TD;
     H[Media\nRequests] --> I[Media\nRepository];
 ```
 
-The goal of this model is one of "cache locality".
+The design of this model is primarily focused on cache locality:
 
-Requests that can only go to the Synapse main process must always go there, however for all other requests, we can send them to the worker that is likely to have the best cache.
+- **Main Process**: Requests that can only go to the Synapse main process must always go there, but we also send client requests there when they don't include a room ID. This load is very light (typically signing keys and profile information) on a small server, we can send them to the worker that is likely to have the best cache.
 
-When a user logs in, their main source of truth will be the sync feed, which comes from the Client Sync worker. This being the case, it makes sense to also have this worker responsible for most Stream Writing responsibilities, so it's always aware of typing/receipts/etc statuses first to send them directly to the users that need to know about them.
+- **Client Sync & Stream Writers**: A user's main source of truth is from the sync feed, which we're dedicating to the Client Sync worker. By also having this worker responsible for most Stream Writing responsibilities, it's always aware of typing/receipts/etc events to send them directly to the users that need to know about them.
 
-When a user is trying to interact with a specific room, it makes sense to store the cache for a single room in a single worker to minimise the amount of caching each worker needs to do. Using load balancing that identifies all possible requests with a room ID in them, we can send all requests for the same room to one of a set of "Room Workers", so as a server accumulates more users/rooms, you can simply add more Room Workers to spread the rooms across more workers.
+- **Room Workers**: When a user is trying to interact with a specific room, it makes sense to store the cache for a single room in a single worker to minimise the amount of caching each worker needs to do. Using load balancing that identifies all possible requests with a room ID in them, we can send all requests for the same room to one of a set of "Room Workers", so as a server accumulates more users/rooms, you can simply add more Room Workers to spread the rooms across more workers.
 
-When other servers are sending new data, these requests don't advertise the room ID in the URI, so we collect these on a single Federation Reader, which can then forward the updates to the Stream/Event Writers, then all other requests from another homeserver that specify a room ID in them can go to the same room worker the clients use, so the same cache is used again, and everyone uses the same timeline.
+- **Federation Reader**: When other servers are sending new data, these requests don't advertise the room ID in the URI, so we collect these on a single Federation Reader, which are then forwarded to the Stream/Event Writers. All other requests from another homeserver that specify a room ID in them can go to the same room worker the clients use, so the same cache is shared.
 
-For media requests, we send these to a dedicated media worker, which handles uploads of attachments/images, generates thumbnails, and provides downloads to both local clients and remote servers.
+- **Media Repository**: For media requests, we send these to a dedicated media worker, which handles uploads of attachments/images, generates thumbnails, and provides downloads to both local clients and remote servers.
 
-Lastly, there are a number of background roles, including maintenance tasks, sending notifications to users, and sending updates to any AppServices you have (like [bridges](https://matrix.org/ecosystem/bridges/)) that are generally quite low-stress tasks on a small server, so we combine these with the Event Writer, which is typically only busy when joining a very large/compelx room.
+- **Background Tasks & Event Writing**: There are a number of background roles, including maintenance tasks, "pushing" notifications to users, and sending updates to any AppServices you have (like [bridges](https://matrix.org/ecosystem/bridges/)) that are generally quite low-stress tasks on a small server, so we combine these with the Event Writer, which is typically only busy when joining a very large/complex room.
