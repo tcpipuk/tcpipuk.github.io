@@ -8,7 +8,6 @@
 4. [Worker Config Files](#worker-config-files)
 5. [Worker Log Config](#worker-log-config)
 6. [Docker Configuration](#docker-configuration)
-7. [Model Explanation](#model-explanation)
 
 ## Introduction
 
@@ -18,7 +17,7 @@ As a result, we can create multiple workers, say what we want them to do to meet
 
 My suggested design is different from the [official documentation](https://matrix-org.github.io/synapse/latest/workers.html), so feel free to study that first, but my recommended model is based on months of testing of various size servers to ensure they can efficiently cope with thousands of rooms and also rooms with tens of thousands of users in them, so I hope you will find it helps.
 
-I've also included an [explanation with a diagram](#model-explanation) at the bottom of this page to help explain the rationale behind this design, and why it makes the best use of available CPU & RAM.
+I've also included an [explanation with a diagram](./README.md#model-explanation) at the bottom of this page to help explain the rationale behind this design, and why it makes the best use of available CPU & RAM.
 
 ## Synapse Configuration
 
@@ -263,33 +262,3 @@ Since we defined a "synapse-worker-template" and "synapse-media-template" in the
 The "healthcheck" sections just need to match the socket name from each worker's config file - the `/health` endpoint listens on both replication and inbound sockets, so you can use either, depending on what the worker has available. This allows Docker to test whether the container is running, so it can be automatically restarted if there are any issues.
 
 With all of the configuration sections above in place, and the [Nginx upstream configuration](./nginx.md#upstreamsconf) from the previous section, all you should need to do now is run `docker compose down && docker compose up -d` to bring up Synapse with the new configuration and a much higher capacity!
-
-## Model Explanation
-
-```mermaid
-graph TD;
-    A[Client\nRequests] --> B[Client Sync &\nStream Writers];
-    A --> C[Main\nProcess];
-    C --> B;
-    C --> E[Background &\nEvent Writer];
-    A --> D[Room\nWorkers];
-    F[Federation\nRequests] --> D;
-    F --> G[Federation\nReader]
-    G --> B;
-    G --> E;
-    H[Media\nRequests] --> I[Media\nRepository];
-```
-
-The design of this model is primarily focused on cache locality:
-
-- **Main Process**: Requests that can only go to the Synapse main process must always go there, but we also send client requests there when they don't include a room ID. This load is very light (typically signing keys and profile information) on a small server, we can send them to the worker that is likely to have the best cache.
-
-- **Client Sync & Stream Writers**: A user's main source of truth is from the sync feed, which we're dedicating to the Client Sync worker. By also having this worker responsible for most Stream Writing responsibilities, it's always aware of typing/receipts/etc events to send them directly to the users that need to know about them.
-
-- **Room Workers**: When a user is trying to interact with a specific room, it makes sense to store the cache for a single room in a single worker to minimise the amount of caching each worker needs to do. Using load balancing that identifies all possible requests with a room ID in them, we can send all requests for the same room to one of a set of "Room Workers", so as a server accumulates more users/rooms, you can simply add more Room Workers to spread the rooms across more workers.
-
-- **Federation Reader**: When other servers are sending new data, these requests don't advertise the room ID in the URI, so we collect these on a single Federation Reader, which are then forwarded to the Stream/Event Writers. All other requests from another homeserver that specify a room ID in them can go to the same room worker the clients use, so the same cache is shared.
-
-- **Media Repository**: For media requests, we send these to a dedicated media worker, which handles uploads of attachments/images, generates thumbnails, and provides downloads to both local clients and remote servers.
-
-- **Background Tasks & Event Writing**: There are a number of background roles, including maintenance tasks, "pushing" notifications to users, and sending updates to any AppServices you have (like [bridges](https://matrix.org/ecosystem/bridges/)) that are generally quite low-stress tasks on a small server, so we combine these with the Event Writer, which is typically only busy when joining a very large/complex room.

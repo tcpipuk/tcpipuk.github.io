@@ -10,20 +10,41 @@ In a closed system, it performs exceptionally well on default settings, allowing
 
 There is a default model described in the [official documentation](https://matrix-org.github.io/synapse/latest/workers.html), but this design is optimised for a family or team of users to access federated rooms at high speed without using so much extra CPU and RAM.
 
-## Workers
+## Model Explanation
 
 In this deployment, we use a variety of Synapse workers, each with a specific role.
 
 We want to give each worker plenty of work to do, so it's not just sitting around using memory for no reason, but also make sure we're not overwhelming individual workers in ways that impact the service.
 
-Here's a list of what we're prescribing to start:
+Here's a diagram of how requests should flow once we're done:
 
-- **Client Sync Worker**: Fast delivery of messages and other updates to client devices. In this deployment, also responsible for managing user presence, typing notifications, and read receipts, so the data is available right where you need it.
-- **Federation Reader**: Process incoming federation updates from other Matrix servers, and answers any requests from other servers that don't specify a room ID.
-- **Federation Senders (4 instances)**: Send out events and messages to other servers in the Matrix federation, distributing the workload to keep up with even the largest rooms.
-- **Media Workers**: Dedicated to handling media uploads and downloads, including generating thumbnails for images, and running any media maintenance jobs.
-- **Room Workers (4 instances)**: Receive all requests for room data from both clients and federation, balanced by room ID to keep all cache for one room efficiently in one place.
-- **Background Worker**: Perform background tasks like database maintenance, push notifications, and periodic tasks. In this deployment, also responsible for receiving new events and writing them into the database.
+```mermaid
+graph TD;
+    A[Client\nRequests] --> B[Client Sync &\nStream Writers];
+    A --> C[Main\nProcess];
+    C --> B;
+    C --> E[Background &\nEvent Writer];
+    A --> D[Room\nWorkers];
+    F[Federation\nRequests] --> D;
+    F --> G[Federation\nReader]
+    G --> B;
+    G --> E;
+    H[Media\nRequests] --> I[Media\nRepository];
+```
+
+- **Main Process**: Some requests can only go to the Synapse main process, but we also send client requests there when they don't include a room ID. This load is very light (typically signing keys and profile information) on a server with only a few active users, so they're safe to send here.
+
+- **Client Sync & Stream Writers**: A user's main source of truth is from the sync feed, which we're dedicating to the Client Sync worker. By also having this worker responsible for most Stream Writing responsibilities, all other workers send it the typing/receipts/etc events they're aware of, to deliver them directly to users that need to know about them as quickly as possible.
+
+- **Room Workers (4 Instances)**: When a user is trying to interact with a specific room, it makes sense to store the cache for a single room in a single worker to minimise the amount of caching each worker needs to do. Using load balancing that identifies requests with a room ID in them, we can send all requests for the same room to just one of the Room Workers, so as your server grows, you can simply add more Room Workers to spread the rooms across more workers.
+
+- **Federation Reader**: When other servers are sending new data, these requests don't advertise the room ID in the URI, so we collect these on a single Federation Reader, which forwards the events to the Stream/Event Writers. All other requests from another homeserver that specify a room ID in them can go to the same Room Worker the clients use, which helps to make the most of its cache.
+
+- **Media Repository**: For media requests, we send these to a dedicated media worker, which handles uploads of attachments/images, generates thumbnails, and provides downloads to both local clients and remote servers.
+
+- **Background Tasks & Event Writing**: There are a number of background roles, including maintenance tasks, "pushing" notifications to users, and sending updates to any AppServices you have (like [bridges](https://matrix.org/ecosystem/bridges/)) that are generally quite low-stress for server with only a few active users, so we combine these with the Event Writer, which is typically only busy when joining a very large/complex room.
+
+- **Federation Senders (4 Instances)**: These aren't displayed above, as they don't handle inbound requests, but we have several to balance the load so you can communicate with even the largest rooms.
 
 ## Getting Started
 
