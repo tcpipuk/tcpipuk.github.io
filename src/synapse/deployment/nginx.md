@@ -33,17 +33,18 @@ Example Docker Compose deployment:
       - ./nginx/logs:/var/log/nginx/
 ```
 
-You may already have a reverse proxy in front of your server, but in either case, I recommend a copy of Nginx deployed
-alongside Synapse itself so that it can easily use the sockets to communicate directly with Synapse and its workers,
-and be restarted whenever Synapse is.
+You may already have a reverse proxy in front of your server, but in either case, I recommend a
+copy of Nginx deployed alongside Synapse itself so that it can easily use the sockets to
+communicate directly with Synapse and its workers, and be restarted whenever Synapse is.
 
-Having Nginx here will provide a single HTTP port to your network to access Synapse on, so outside your machine it'll
-behave (almost) exactly the same as a monolithic instance of Synapse, just a lot faster!
+Having Nginx here will provide a single HTTP port to your network to access Synapse on, so outside
+your machine it'll behave (almost) exactly the same as a monolithic instance of Synapse, just a lot
+faster!
 
 ## Configuration Files
 
-I recommend splitting up the config into more manageable files, so next to my `docker-compose.yml` I have an `nginx`
-directory with the following file structure:
+I recommend splitting up the config into more manageable files, so next to my `docker-compose.yml`
+I have an `nginx` directory with the following file structure:
 
 ```bash
 docker-compose.yml
@@ -61,8 +62,8 @@ My current configuration files are below, with a short summary of what's going o
 
 ### nginx.conf
 
-This is some fairly standard Nginx configuration for a public HTTP service, with one Nginx worker per CPU core, and
-larger buffer sizes to accommodate media requests:
+This is some fairly standard Nginx configuration for a public HTTP service, with one Nginx worker
+per CPU core, and larger buffer sizes to accommodate media requests:
 
 ```nginx,filepath=nginx.conf
 # Worker Performance
@@ -250,20 +251,21 @@ upstream synapse_inbound_room_workers {
 }
 ```
 
-A major change from the default design is my concept of "room workers" that are each responsible for a fraction of the
-rooms the server handles.
+A major change from the default design is my concept of "room workers" that are each responsible
+for a fraction of the rooms the server handles.
 
-The theory here is that, by balancing requests using the room ID, each "room worker" only needs to understand a few of
-the rooms, and its cache can be very specialised, while massively reducing the amount of workers we need overall.
+The theory here is that, by balancing requests using the room ID, each "room worker" only needs to
+understand a few of the rooms, and its cache can be very specialised, while massively reducing the
+amount of workers we need overall.
 
-I've included the load balancing method you should use for each one, in case you need to add extra workers -
-for example, if your server needs to generate lots of thumbnails, or has more than a few users, you may need an extra
-media worker.
+I've included the load balancing method you should use for each one, in case you need to add extra
+workers - for example, if your server needs to generate lots of thumbnails, or has more than a few
+users, you may need an extra media worker.
 
 ### maps.conf
 
-These are used to provide "mapping" so Nginx can understand which worker to load balance incoming requests, no changes
-should be required:
+These are used to provide "mapping" so Nginx can understand which worker to load balance incoming
+requests, no changes should be required:
 
 ```nginx,filepath=maps.conf
 # Client username from MXID
@@ -390,7 +392,7 @@ location ~ ^/_matrix/client/(api/v1|r0|v3|unstable)/(room_keys/|keys/(query|chan
 }
 
 # Media
-location /_matrix/media/ {
+location ~* ^/_matrix/((client|federation)/[^/]+/)media/ {
   set $proxy_pass http://synapse_inbound_media;
   include proxy.conf;
 }
@@ -416,19 +418,21 @@ location /_synapse/ {
 }
 ```
 
-It starts by forcing some requests to go directly to the main thread, as workers aren't ready to handle them yet, and
-then for each type of request (federation/client) we send specialised requests to specialised workers, otherwise send
-any request with a room ID to the "room workers" and whatever's left goes to our dedicated federation/client reader.
+It starts by forcing some requests to go directly to the main thread, as workers aren't ready to
+handle them yet, and then for each type of request (federation/client) we send specialised requests
+to specialised workers, otherwise send any request with a room ID to the "room workers" and
+whatever's left goes to our dedicated federation/client reader.
 
-You may also notice that the special "stream" endpoints all go to the `synapse_inbound_client_syncs` group - if you
-have multiple sync workers, you'll need to split this out to a separate worker for stream writing, but for a small
-number of clients (e.g. a home install) it's best for performance to keep the caches with your sync workers to maximise
-caching and minimise queries to your database.
+You may also notice that the special "stream" endpoints all go to the
+`synapse_inbound_client_syncs` group - if you have multiple sync workers, you'll need to split this
+out to a separate worker for stream writing, but for a small number of clients (e.g. a home
+install) it's best for performance to keep the caches with your sync workers to maximise caching
+and minimise queries to your database.
 
 ### proxy.conf
 
-You may have noticed we used "proxy.conf" many times above. We do this to quickly define standard proxy config, which
-could easily be overriden per location block if needed later:
+You may have noticed we used "proxy.conf" many times above. We do this to quickly define standard
+proxy config, which could easily be overriden per location block if needed later:
 
 ```nginx,filepath=proxy.conf
 proxy_connect_timeout 2s;
@@ -448,10 +452,12 @@ proxy_set_header Upgrade $http_upgrade;
 
 ### private.conf
 
-Lastly, let's approve specific ranges for private access to the admin API. You'll want to define ranges that can access
-it, which may include your home/work IP, or private ranges if you're hosting at home.
+Lastly, let's approve specific ranges for private access to the admin API. You'll want to define
+ranges that can access it, which may include your home/work IP, or private ranges if you're hosting
+at home.
 
-Here, I've specified the standard [RFC1918](https://en.wikipedia.org/wiki/Private_network) private ranges:
+Here, I've specified the standard [RFC1918](https://en.wikipedia.org/wiki/Private_network) private
+ranges:
 
 ```nginx,filepath=private.conf
 # Access list for non-public access
