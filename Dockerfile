@@ -4,8 +4,9 @@ FROM rust:alpine AS builder
 # Install necessary dependencies
 RUN apk add --no-cache curl git openssl-dev musl-dev gcc graphviz
 
-# Set the working directory
-WORKDIR /usr/src
+# Set the environment variables for Cargo
+ENV CARGO_HOME=/usr/local/cargo
+ENV PATH=$CARGO_HOME/bin:$PATH
 
 # Install mdBook and extensions
 RUN cargo install mdbook \
@@ -21,8 +22,8 @@ FROM alpine:latest
 RUN apk add --no-cache curl graphviz
 
 # Copy mdBook and extensions from the builder stage
-COPY --from=builder /root/.cargo/bin/mdbook /usr/local/bin/
-COPY --from=builder /root/.cargo/bin/mdbook-* /usr/local/bin/
+COPY --from=builder /usr/local/cargo/bin/mdbook /usr/local/bin/
+COPY --from=builder /usr/local/cargo/bin/mdbook-* /usr/local/bin/
 
 # Set the working directory
 WORKDIR /workdir

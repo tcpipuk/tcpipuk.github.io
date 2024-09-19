@@ -14,10 +14,10 @@ permissions:
 
 concurrency:
     group: pages
-    cancel-in-progress: false
+    cancel-in-progress: true
 
 jobs:
-    build-docker-image:
+    build-docker:
         runs-on: ubuntu-latest
         outputs:
             image_built: ${{ steps.check_image.outputs.image_built }}
@@ -47,9 +47,11 @@ jobs:
                   push: true
                   tags: ghcr.io/${{ github.repository_owner }}/mdbook:latest
                   load: false
+                  cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/mdbook:latest
+                  cache-to: type=inline
 
     deploy-mdbook:
-        needs: build-docker-image
+        needs: build-docker
         runs-on: ubuntu-latest
         container:
             image: ghcr.io/${{ github.repository_owner }}/mdbook:latest
