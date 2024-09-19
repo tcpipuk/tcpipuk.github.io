@@ -380,7 +380,7 @@ location ~ ^/_matrix/client/.*?![\s\S]+:[A-Za-z0-9.\-]+ {
 }
 
 # Client: Sync
-location ~ ^/_matrix/client/(api/v1|r0|v3|unstable)/(sync|events|initialSync|rooms/[\s\S]+/initialSync)$ {
+location ~ ^/_matrix/client/((api/)?[^/]+)/(sync|events|initialSync|rooms/[\s\S]+/initialSync)$ {
   set $proxy_pass http://synapse_inbound_client_syncs;
   include proxy.conf;
 }
