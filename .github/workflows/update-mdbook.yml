@@ -1,4 +1,4 @@
-name: Deploy mdBook site to Pages
+name: Deploy mdBook Site to Pages
 
 on:
     push:
@@ -10,33 +10,61 @@ permissions:
     contents: read
     id-token: write
     pages: write
-    packages: read # Needed to pull from GHCR
+    packages: write # Needed to push/pull from GHCR
 
 concurrency:
     group: pages
     cancel-in-progress: false
 
 jobs:
-    deploy:
+    build-docker-image:
+        runs-on: ubuntu-latest
+        outputs:
+            image_built: ${{ steps.check_image.outputs.image_built }}
+
+        steps:
+            - name: Check if Docker Image Exists
+              id: check_image
+              run: |
+                  IMAGE="ghcr.io/${{ github.repository_owner }}/mdbook:latest"
+                  if docker pull $IMAGE > /dev/null 2>&1; then
+                    echo "Image exists."
+                    echo "image_built=false" >> $GITHUB_OUTPUT
+                  else
+                    echo "Image does not exist."
+                    echo "image_built=true" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Build and Push Docker Image
+              if: steps.check_image.outputs.image_built == 'true'
+              uses: docker/build-push-action@v5
+              with:
+                  context: .
+                  push: true
+                  tags: ghcr.io/${{ github.repository_owner }}/mdbook:latest
+                  load: false
+
+    deploy-mdbook:
+        needs: build-docker-image
         runs-on: ubuntu-latest
         container:
             image: ghcr.io/${{ github.repository_owner }}/mdbook:latest
         steps:
-            - name: Checkout source
+            - name: Checkout Source
               uses: actions/checkout@v4
               with:
                   submodules: true
                   fetch-depth: 0
 
-            - name: Install dependencies
+            - name: Install Dependencies
               run: |
                   apk add --no-cache curl
 
-            - name: Prepare assets directories
+            - name: Prepare Assets Directories
               run: |
                   mkdir -p src/fonts src/assets
 
-            - name: Download additional assets
+            - name: Download Additional Assets
               run: |
                   # Devicon Fonts and CSS
                   curl -sSf -o devicon.min.css https://raw.githubusercontent.com/devicons/devicon/master/devicon.min.css
@@ -49,13 +77,13 @@ jobs:
                   curl -sSf -o src/assets/whichlang.css https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
                   curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
 
-            - name: Build the mdBook site
+            - name: Build the mdBook Site
               run: mdbook build
 
             - name: Turn off Jekyll
               run: touch book/.nojekyll
 
-            - name: Upload artifact
+            - name: Upload Artifact
               uses: actions/upload-pages-artifact@v2
               with:
                   path: ./book
