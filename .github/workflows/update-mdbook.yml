@@ -26,7 +26,7 @@ jobs:
             - name: Check if Docker Image Exists
               id: check_image
               run: |
-                  IMAGE="ghcr.io/${{ github.repository_owner }}/mdbook:latest"
+                  IMAGE="ghcr.io/${{ github.repository }}:latest"
                   if docker pull $IMAGE > /dev/null 2>&1; then
                     echo "Image exists."
                     echo "image_built=false" >> $GITHUB_OUTPUT
@@ -45,7 +45,7 @@ jobs:
               with:
                   context: .
                   push: true
-                  tags: ghcr.io/${{ github.repository_owner }}/mdbook:latest
+                  tags: ghcr.io/${{ github.repository }}:latest
                   load: false
                   cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/mdbook:latest
                   cache-to: type=inline
@@ -54,7 +54,7 @@ jobs:
         needs: build-docker
         runs-on: ubuntu-latest
         container:
-            image: ghcr.io/${{ github.repository_owner }}/mdbook:latest
+            image: ghcr.io/${{ github.repository }}:latest
         steps:
             - name: Checkout Source
               uses: actions/checkout@v4

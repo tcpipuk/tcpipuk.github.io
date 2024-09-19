@@ -32,7 +32,7 @@ jobs:
               with:
                   context: .
                   push: true
-                  tags: ghcr.io/${{ github.repository_owner }}/mdbook:latest
+                  tags: ghcr.io/${{ github.repository }}:latest
                   load: false
-                  cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/mdbook:latest
+                  cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:latest
                   cache-to: type=inline
