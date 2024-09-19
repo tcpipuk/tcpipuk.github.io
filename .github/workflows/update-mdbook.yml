@@ -35,6 +35,10 @@ jobs:
                     echo "image_built=true" >> $GITHUB_OUTPUT
                   fi
 
+            - name: Checkout Repository
+              if: steps.check_image.outputs.image_built == 'true'
+              uses: actions/checkout@v4
+
             - name: Build and Push Docker Image
               if: steps.check_image.outputs.image_built == 'true'
               uses: docker/build-push-action@v5
