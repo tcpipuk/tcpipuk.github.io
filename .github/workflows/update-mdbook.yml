@@ -83,6 +83,10 @@ jobs:
                   curl -sSf -o src/assets/whichlang.css https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
                   curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
 
+            - name: Install Catppuccin Theme
+              run: |
+                  mdbook-catppuccin install
+
             - name: Build the mdBook Site
               run: mdbook build
 
