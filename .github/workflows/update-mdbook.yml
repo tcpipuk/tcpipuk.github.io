@@ -73,7 +73,7 @@ jobs:
                   password: ${{ secrets.GITHUB_TOKEN }}
  
             - name: Checkout Source
-              uses: actions/checkout@v5
+              uses: actions/checkout@v4
               with:
                   submodules: true
                   fetch-depth: 0
@@ -107,11 +107,11 @@ jobs:
               run: touch book/.nojekyll
 
             - name: Upload Artifact
-              uses: actions/upload-pages-artifact@v2
+              uses: actions/upload-pages-artifact@v3
               with:
                   path: ./book
 
             - name: Deploy to GitHub Pages
               id: deployment
-              uses: actions/deploy-pages@v3
+              uses: actions/deploy-pages@v4
               if: ${{ github.ref == 'refs/heads/main' }}
