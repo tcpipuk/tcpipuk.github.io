@@ -30,15 +30,15 @@ COPY --from=builder /usr/local/cargo/bin/mdbook-* /usr/local/bin/
 # Set the working directory
 WORKDIR /workdir
 
-# Create a non-root user
+# Create the theme directory as root and download the Catppuccin theme files
+RUN mkdir -p /workdir/theme && \
+    curl -sSf -o /workdir/theme/index.hbs https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/index.hbs && \
+    curl -sSf -o /workdir/theme/catppuccin.css https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/catppuccin.css && \
+    curl -sSf -o /workdir/theme/catppuccin-admonish.css https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/catppuccin-admonish.css
+
+# Create a non-root user after the theme files are downloaded
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
-
-# Download the Catppuccin theme files manually
-RUN mkdir -p ./theme && \
-    curl -sSf -o ./theme/index.hbs https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/index.hbs && \
-    curl -sSf -o ./theme/catppuccin.css https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/catppuccin.css && \
-    curl -sSf -o ./theme/catppuccin-admonish.css https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/catppuccin-admonish.css
 
 # Entrypoint (can be overridden in the workflow)
 ENTRYPOINT ["mdbook"]
