@@ -11,18 +11,16 @@ build-dir = "book"
 create-missing = true
 
 [output.html]
+default-theme = "latte"
+preferred-dark-theme = "mocha"
 # URL to send visitors who click edit
 edit-url-template = "https://github.com/tcpipuk/tcpipuk.github.io/edit/main/{path}"
-
 # Remove numbers before each item in the sidebar
 no-section-label = true
-
 # The source code URL of the repository
 git-repository-url = "https://github.com/tcpipuk/tcpipuk.github.io/"
-
 # The path that the docs are hosted on
 site-url = "/"
-
 # Additional HTML, JS, CSS injected into each page of the book
 additional-css = [
     "devicon.min.css",
