@@ -8,8 +8,9 @@ RUN apk add --no-cache curl git openssl-dev musl-dev gcc graphviz
 ENV CARGO_HOME=/usr/local/cargo
 ENV PATH=$CARGO_HOME/bin:$PATH
 
-# Install mdBook and extensions
-RUN cargo install mdbook \
+# Install mdBook with optimisations and necessary plugins
+RUN cargo install mdbook --no-default-features --features search \
+    mdbook-catppuccin \
     mdbook-admonish \
     mdbook-footnote \
     mdbook-graphviz \
@@ -31,6 +32,9 @@ WORKDIR /workdir
 # Create a non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
+
+# Install the Catppuccin theme (this will run once on container start)
+RUN mdbook-catppuccin install
 
 # Entrypoint (can be overridden in the workflow)
 ENTRYPOINT ["mdbook"]
