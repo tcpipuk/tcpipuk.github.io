@@ -63,12 +63,10 @@ jobs:
                   fetch-depth: 0
 
             - name: Install Dependencies
-              run: |
-                  apk add --no-cache curl
+              run: apk add --no-cache curl
 
             - name: Prepare Assets Directories
-              run: |
-                  mkdir -p src/fonts src/assets
+              run: mkdir -p src/fonts src/assets
 
             - name: Download Additional Assets
               run: |
@@ -84,8 +82,7 @@ jobs:
                   curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
 
             - name: Install Catppuccin Theme
-              run: |
-                  mdbook-catppuccin install
+              run: mdbook-catppuccin install
 
             - name: Build the mdBook Site
               run: mdbook build
