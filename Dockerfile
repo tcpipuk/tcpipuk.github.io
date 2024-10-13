@@ -8,13 +8,15 @@ RUN apk add --no-cache curl git openssl-dev musl-dev gcc graphviz
 ENV CARGO_HOME=/usr/local/cargo
 ENV PATH=$CARGO_HOME/bin:$PATH
 
-# Install mdBook with optimisations and necessary plugins
-RUN cargo install mdbook --no-default-features --features search \
-    mdbook-catppuccin \
-    mdbook-admonish \
-    mdbook-footnote \
-    mdbook-graphviz \
-    mdbook-mermaid
+# Install mdBook with optimised features
+RUN cargo install mdbook --no-default-features --features search
+
+# Install additional mdBook plugins and the Catppuccin theme separately
+RUN cargo install mdbook-catppuccin \
+    && cargo install mdbook-admonish \
+    && cargo install mdbook-footnote \
+    && cargo install mdbook-graphviz \
+    && cargo install mdbook-mermaid
 
 # Stage 2: Create minimal runtime image
 FROM alpine:latest
