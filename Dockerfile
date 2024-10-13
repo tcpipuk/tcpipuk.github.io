@@ -2,7 +2,7 @@
 FROM rust:alpine AS builder
 
 # Install necessary dependencies
-RUN apk add --no-cache curl git openssl-dev musl-dev gcc graphviz
+RUN apk add --no-cache curl docker gcc git graphviz openssl-dev musl-dev
 
 # Set the environment variables for Cargo
 ENV CARGO_HOME=/usr/local/cargo
