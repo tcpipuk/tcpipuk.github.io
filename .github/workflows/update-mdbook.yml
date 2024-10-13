@@ -3,14 +3,14 @@ name: Deploy mdBook Site to Pages
 on:
     push:
         branches:
-            - "*" # Runs on all branches
-    workflow_dispatch: # Allows manual triggering
+            - "*"
+    workflow_dispatch:
 
 permissions:
     contents: read
     id-token: write
     pages: write
-    packages: write # Needed to push/pull from GHCR
+    packages: write
 
 concurrency:
     group: pages
@@ -64,6 +64,7 @@ jobs:
         runs-on: ubuntu-latest
         container:
             image: ghcr.io/${{ github.repository }}:latest
+
         steps:
             - name: Log in to GitHub Container Registry
               uses: docker/login-action@v3
@@ -74,9 +75,6 @@ jobs:
  
             - name: Checkout Source
               uses: actions/checkout@v4
-              with:
-                  submodules: true
-                  fetch-depth: 0
 
             - name: Install Dependencies
               run: apk add --no-cache curl
