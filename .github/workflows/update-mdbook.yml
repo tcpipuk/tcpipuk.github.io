@@ -23,6 +23,19 @@ jobs:
             image_built: ${{ steps.check_image.outputs.image_built }}
 
         steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Log in to GitHub Container Registry
+              uses: docker/login-action@v2
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
             - name: Check if Docker Image Exists
               id: check_image
               run: |
@@ -34,10 +47,6 @@ jobs:
                     echo "Image does not exist."
                     echo "image_built=true" >> $GITHUB_OUTPUT
                   fi
-
-            - name: Checkout Repository
-              if: steps.check_image.outputs.image_built == 'true'
-              uses: actions/checkout@v4
 
             - name: Build and Push Docker Image
               if: steps.check_image.outputs.image_built == 'true'
