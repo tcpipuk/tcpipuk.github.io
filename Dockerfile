@@ -11,9 +11,8 @@ ENV PATH=$CARGO_HOME/bin:$PATH
 # Install mdBook with optimised features
 RUN cargo install mdbook --no-default-features --features search
 
-# Install additional mdBook plugins and the Catppuccin theme separately
-RUN cargo install mdbook-catppuccin \
-    && cargo install mdbook-admonish \
+# Install additional mdBook plugins
+RUN cargo install mdbook-admonish \
     && cargo install mdbook-footnote \
     && cargo install mdbook-graphviz \
     && cargo install mdbook-mermaid
@@ -35,8 +34,11 @@ WORKDIR /workdir
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-# Install the Catppuccin theme (this will run once on container start)
-RUN mdbook-catppuccin install
+# Download the Catppuccin theme files manually
+RUN mkdir -p ./theme && \
+    curl -sSf -o ./theme/index.hbs https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/index.hbs && \
+    curl -sSf -o ./theme/catppuccin.css https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/catppuccin.css && \
+    curl -sSf -o ./theme/catppuccin-admonish.css https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/catppuccin-admonish.css
 
 # Entrypoint (can be overridden in the workflow)
 ENTRYPOINT ["mdbook"]
