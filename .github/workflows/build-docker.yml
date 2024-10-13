@@ -1,0 +1,38 @@
+name: Build and Publish Docker Image
+
+on:
+    schedule:
+        - cron: "0 0 * * 0" # Runs every Sunday at midnight
+    workflow_dispatch: # Allows manual triggering
+
+permissions:
+    contents: read
+    packages: write # Needed to push to GHCR
+
+jobs:
+    build-and-push:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Log in to GHCR
+              uses: docker/login-action@v2
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.repository_owner }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: .
+                  push: true
+                  tags: ghcr.io/${{ github.repository }}:latest
+                  load: false
+                  cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:latest
+                  cache-to: type=inline
