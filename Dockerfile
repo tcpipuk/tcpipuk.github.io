@@ -30,11 +30,10 @@ COPY --from=builder /usr/local/cargo/bin/mdbook-* /usr/local/bin/
 # Set the working directory
 WORKDIR /workdir
 
-# Create the theme directory as root and download the Catppuccin theme files
+# Download the Catppuccin theme files from the correct URLs
 RUN mkdir -p /workdir/theme && \
-    curl -sSf -o /workdir/theme/index.hbs https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/index.hbs && \
-    curl -sSf -o /workdir/theme/catppuccin.css https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/catppuccin.css && \
-    curl -sSf -o /workdir/theme/catppuccin-admonish.css https://raw.githubusercontent.com/catppuccin/mdBook/main/src/bin/assets/catppuccin-admonish.css
+    curl -sSf -o /workdir/theme/catppuccin.css https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin.css && \
+    curl -sSf -o /workdir/theme/catppuccin-admonish.css https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin-admonish.css
 
 # Create a non-root user after the theme files are downloaded
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
