@@ -10,62 +10,63 @@ permissions:
   contents: read
   id-token: write
   pages: write
-  packages: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build-docker:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/${{ github.repository }}:latest
-          load: false
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/mdbook:latest
-          cache-to: type=inline
-
   deploy-mdbook:
-    needs: build-docker
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository }}:latest
-      options: --user root
+    env:
+      MDBOOK_VERSION: "0.4.37"
+      MDBOOK_ADMONISH_VERSION: "1.15.0"
+      MDBOOK_FOOTNOTE_VERSION: "0.1.3"
+      MDBOOK_GRAPHVIZ_VERSION: "0.1.6"
+      MDBOOK_MERMAID_VERSION: "0.13.0"
 
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        run: apk add --no-cache curl
+      - name: Install System Dependencies
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Install mdBook and Plugins
+        run: |
+          # Install mdBook
+          curl -sSL \
+            "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin
+
+          # Install mdbook-admonish
+          curl -sSL \
+            "https://github.com/tommilligan/mdbook-admonish/releases/download/v${MDBOOK_ADMONISH_VERSION}/mdbook-admonish-v${MDBOOK_ADMONISH_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin
+
+          # Install mdbook-footnote
+          curl -sSL \
+            "https://github.com/daviddrysdale/mdbook-footnote/releases/download/v${MDBOOK_FOOTNOTE_VERSION}/mdbook-footnote-v${MDBOOK_FOOTNOTE_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin
+
+          # Install mdbook-graphviz
+          curl -sSL \
+            "https://github.com/dylanowen/mdbook-graphviz/releases/download/v${MDBOOK_GRAPHVIZ_VERSION}/mdbook-graphviz-v${MDBOOK_GRAPHVIZ_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin
+
+          # Install mdbook-mermaid
+          curl -sSL \
+            "https://github.com/badboy/mdbook-mermaid/releases/download/v${MDBOOK_MERMAID_VERSION}/mdbook-mermaid-v${MDBOOK_MERMAID_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin
 
       - name: Prepare Assets Directories
-        run: |
-          mkdir -p src/fonts src/assets theme
+        run: mkdir -p src/fonts src/assets theme
 
       - name: Setup Catppuccin Theme
         run: |
           # Download latest Catppuccin theme
-          curl -sSfL -o theme/catppuccin.css https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin.css
+          curl -sSfL -o theme/catppuccin.css \
+            https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin.css
           # Keep only index.hbs from default theme
           mdbook init --theme .
           find ./theme -type f ! -name 'index.hbs' -delete
@@ -76,18 +77,29 @@ jobs:
       - name: Download Additional Assets
         run: |
           # Devicon Fonts and CSS
-          curl -sSf -o devicon.min.css https://raw.githubusercontent.com/devicons/devicon/master/devicon.min.css
-          curl -sSf -o src/fonts/devicon.eot https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.eot
-          curl -sSf -o src/fonts/devicon.svg https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.svg
-          curl -sSf -o src/fonts/devicon.ttf https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.ttf
-          curl -sSf -o src/fonts/devicon.woff https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.woff
+          curl -sSf \
+            -o devicon.min.css \
+            https://raw.githubusercontent.com/devicons/devicon/master/devicon.min.css
+          curl -sSf \
+            -o src/fonts/devicon.eot \
+            https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.eot
+          curl -sSf \
+            -o src/fonts/devicon.svg \
+            https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.svg
+          curl -sSf \
+            -o src/fonts/devicon.ttf \
+            https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.ttf
+          curl -sSf \
+            -o src/fonts/devicon.woff \
+            https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.woff
 
           # WhichLang Assets
-          curl -sSf -o src/assets/whichlang.css https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
-          curl -sSf -o src/assets/whichlang.js https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
-
-      - name: Install Catppuccin Theme
-        run: mdbook-catppuccin install
+          curl -sSf \
+            -o src/assets/whichlang.css \
+            https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
+          curl -sSf \
+            -o src/assets/whichlang.js \
+            https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
 
       - name: Build the mdBook Site
         run: mdbook build
