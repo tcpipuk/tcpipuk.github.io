@@ -28,7 +28,7 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.2
+        uses: mozilla-actions/sccache-action@v0.0.7
         with:
           version: "0.9.0"
 
