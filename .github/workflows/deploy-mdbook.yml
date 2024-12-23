@@ -40,9 +40,6 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Cache dependencies
-        uses: Swatinem/rust-cache@v2.7.5
-
       - name: Build mdbook-footnote
         run: cargo install mdbook-footnote
 
