@@ -18,6 +18,12 @@ concurrency:
 jobs:
   deploy-mdbook:
     runs-on: ubuntu-latest
+    env:
+      MDBOOK_VERSION: "0.4.43"
+      MDBOOK_ADMONISH_VERSION: "1.15.0"
+      MDBOOK_FOOTNOTE_VERSION: "0.1.3"
+      MDBOOK_GRAPHVIZ_VERSION: "0.1.6"
+      MDBOOK_MERMAID_VERSION: "0.13.0"
 
     steps:
       - name: Checkout Source
@@ -29,14 +35,14 @@ jobs:
       - name: Install mdBook
         run: |
           wget -qO mdbook.tar.gz \
-            "https://github.com/rust-lang/mdBook/releases/latest/download/mdbook-x86_64-unknown-linux-gnu.tar.gz"
+            "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
           sudo tar xf mdbook.tar.gz -C /usr/local/bin
           rm -rf mdbook.tar.gz
 
       - name: Install mdbook-admonish
         run: |
           wget -qO admonish.tar.gz \
-            "https://github.com/tommilligan/mdbook-admonish/releases/latest/download/mdbook-admonish-x86_64-unknown-linux-gnu.tar.gz"
+            "https://github.com/tommilligan/mdbook-admonish/releases/download/v${MDBOOK_ADMONISH_VERSION}/mdbook-admonish-v${MDBOOK_ADMONISH_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
           sudo tar xf admonish.tar.gz -C /usr/local/bin
           rm -rf admonish.tar.gz
 
