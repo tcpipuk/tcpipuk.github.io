@@ -19,8 +19,6 @@ concurrency:
 jobs:
   build-docker:
     runs-on: ubuntu-latest
-    outputs:
-      image_built: ${{ steps.check_image.outputs.image_built }}
 
     steps:
       - name: Checkout repository
@@ -36,20 +34,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check if Docker Image Exists
-        id: check_image
-        run: |
-          IMAGE="ghcr.io/${{ github.repository }}:latest"
-          if docker pull $IMAGE > /dev/null 2>&1; then
-            echo "Image exists."
-            echo "image_built=false" >> $GITHUB_OUTPUT
-          else
-            echo "Image does not exist."
-            echo "image_built=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Build and Push Docker Image
-        if: steps.check_image.outputs.image_built == 'true'
         uses: docker/build-push-action@v5
         with:
           context: .
