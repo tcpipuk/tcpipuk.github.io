@@ -13,7 +13,8 @@
 
 ## Docker Engine
 
-If Docker is not already installed, visit [the official guide](https://docs.docker.com/engine/install/#supported-platforms) and select the correct operating system to install Docker Engine.
+If Docker is not already installed, visit [the official guide](https://docs.docker.com/engine/install/#supported-platforms)
+and select the correct operating system to install Docker Engine.
 
 Once complete, you should now be ready with the latest version of Docker, and can continue the guide.
 
@@ -42,11 +43,14 @@ Before creating the Docker Compose configuration itself, let's define the enviro
 
 ## YAML Templating
 
-Using [YAML Anchors](https://yaml.org/spec/1.2.2/#3222-anchors-and-aliases) lets you cut down the repeated lines in the config and simplify updating values uniformly.
+Using [YAML Anchors](https://yaml.org/spec/1.2.2/#3222-anchors-and-aliases) lets you cut down the
+repeated lines in the config and simplify updating values uniformly.
 
-Docker doesn't try to create anything from blocks starting with `x-` so you can use them to define an `&anchor` that you can then recall later as an `*alias`.
+Docker doesn't try to create anything from blocks starting with `x-` so you can use them to define
+an `&anchor` that you can then recall later as an `*alias`.
 
-It's not very simple to explain, so take a look at this example, where we establish basic settings for all containers, then upper-limits on CPU and RAM for sizes of container:
+It's not very simple to explain, so take a look at this example, where we establish basic settings
+for all containers, then upper-limits on CPU and RAM for sizes of container:
 
 ```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
 version: "3"
@@ -72,7 +76,8 @@ x-large-container: &large-container
   mem_limit: 8G
 ```
 
-Now we've defined these, we can extend further with more specific templates, first defining what a Synapse container looks like, and variants for the two main types of worker:
+Now we've defined these, we can extend further with more specific templates, first defining what a
+Synapse container looks like, and variants for the two main types of worker:
 
 ```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
 x-synapse-template: &synapse-template
@@ -116,11 +121,16 @@ Now this is done, we're ready to start actually defining resources!
 
 ## Unix Sockets
 
-If all of your containers live on the same physical server, you can take advantage of [Unix sockets](https://en.wikipedia.org/wiki/Unix_domain_socket) to bypass the entire network stack when containers need to talk to each other.
+If all of your containers live on the same physical server, you can take advantage of [Unix sockets](https://en.wikipedia.org/wiki/Unix_domain_socket)
+to bypass the entire network stack when containers need to talk to each other.
 
-This may sound super technical, but in short, it means two different programs can speak directly via the operating system instead of opening a network connection, reducing the time it takes to connect. Synapse is constantly passing messages between workers and replicating data, so this one change makes a very measurable visible difference to client performance for free!
+This may sound super technical, but in short, it means two different programs can speak directly
+via the operating system instead of opening a network connection, reducing the time it takes to
+connect. Synapse is constantly passing messages between workers and replicating data, so this one
+change makes a very measurable visible difference to client performance for free!
 
-First, let's define a volume to store the sockets. As the sockets are tiny, we can use `tmpfs` so it's stored in RAM to make the connections even faster and minimise disk load:
+First, let's define a volume to store the sockets. As the sockets are tiny, we can use `tmpfs` so
+it's stored in RAM to make the connections even faster and minimise disk load:
 
 ```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
 volumes:
@@ -130,7 +140,8 @@ volumes:
       device: tmpfs
 ```
 
-I then recommend a tiny "init-sockets" container to run before the others to make sure the ownership and permissions are set correctly before the other containers start to try writing to it:
+I then recommend a tiny "init-sockets" container to run before the others to make sure the ownership
+and permissions are set correctly before the other containers start to try writing to it:
 
 ```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
 services:
@@ -175,7 +186,8 @@ Now we can define our PostgreSQL database:
       - ./pgsql16:/var/lib/postgresql/data
 ```
 
-And if you're following [my backups guide](../../postgres/backups/README.md), it's now as easy as this to deploy a replica:
+And if you're following [my backups guide](../../postgres/backups/README.md), it's now as easy as
+this to deploy a replica:
 
 ```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
   db-replica:
@@ -193,7 +205,9 @@ And if you're following [my backups guide](../../postgres/backups/README.md), it
       - ./pgrep16:/var/lib/postgresql/data
 ```
 
-You can change the paths from "pgsql" or "pgrep" if you prefer, just make sure to do it before starting the first time, or you'll need to rename the directory on disk at the same time to avoid any data loss.
+You can change the paths from "pgsql" or "pgrep" if you prefer, just make sure to do it before
+starting the first time, or you'll need to rename the directory on disk at the same time to avoid
+any data loss.
 
 ## Synapse
 
@@ -204,4 +218,5 @@ With all of our templates above, Synapse itself is this easy:
     <<: *synapse-template
 ```
 
-In the next sections, we just need to set up the config files for each of these applications and then you're ready to go.
+In the next sections, we just need to set up the config files for each of these applications and
+then you're ready to go.

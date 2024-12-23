@@ -23,12 +23,12 @@ git-repository-url = "https://github.com/tcpipuk/tcpipuk.github.io/"
 site-url = "/"
 # Additional HTML, JS, CSS injected into each page of the book
 additional-css = [
-    "devicon.min.css",
-    "src/assets/table-of-contents.css",
-    "src/assets/whichlang.css",
-    "src/assets/custom.css",
-    "./theme/catppuccin.css",
-    "./theme/catppuccin-admonish.css"
+	"devicon.min.css",
+	"src/assets/table-of-contents.css",
+	"src/assets/whichlang.css",
+	"src/assets/custom.css",
+	"./theme/catppuccin.css",
+	"./theme/catppuccin-admonish.css",
 ]
 additional-js = ["src/assets/table-of-contents.js", "src/assets/whichlang.js"]
 

@@ -1,0 +1,194 @@
+name: Deploy mdBook Site to Pages
+
+on:
+  push:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  SCCACHE_VERSION: "0.9.0"
+  MDBOOK_VERSION: "0.4.43"
+  MDBOOK_ADMONISH_VERSION: "1.15.0"
+  MDBOOK_GRAPHVIZ_VERSION: "0.2.1"
+  MDBOOK_MERMAID_VERSION: "0.13.0"
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/git
+            ~/.cargo/registry
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check for existing mdbook-footnote
+        id: check-footnote
+        run: |
+          if [ -f ~/.cargo/bin/mdbook-footnote ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "mdbook-footnote binary found, will skip build"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "mdbook-footnote binary not found, will build"
+          fi
+
+      - name: Build mdbook-footnote
+        if: steps.check-footnote.outputs.exists != 'true'
+        run: cargo install mdbook-footnote
+
+      - name: Check for existing mdbook-graphviz
+        id: check-graphviz
+        run: |
+          if [ -f ~/.cargo/bin/mdbook-graphviz ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "mdbook-graphviz binary found, will skip build"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "mdbook-graphviz binary not found, will build"
+          fi
+
+      - name: Build mdbook-graphviz
+        if: steps.check-graphviz.outputs.exists != 'true'
+        run: cargo install mdbook-graphviz --version ${MDBOOK_GRAPHVIZ_VERSION}
+
+      - name: Upload Binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdbook-plugins
+          path: |
+            ~/.cargo/bin/mdbook-footnote
+            ~/.cargo/bin/mdbook-graphviz
+          retention-days: 1
+
+  deploy-mdbook:
+    needs: build-deps
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends graphviz
+
+      - name: Install mdBook
+        run: |
+          wget -qO mdbook.tar.gz \
+            "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          sudo tar xf mdbook.tar.gz -C /usr/local/bin
+          rm -rf mdbook.tar.gz
+
+      - name: Install mdbook-admonish
+        run: |
+          wget -qO admonish.tar.gz \
+            "https://github.com/tommilligan/mdbook-admonish/releases/download/v${MDBOOK_ADMONISH_VERSION}/mdbook-admonish-v${MDBOOK_ADMONISH_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          sudo tar xf admonish.tar.gz -C /usr/local/bin
+          rm -rf admonish.tar.gz
+
+      - name: Download mdbook plugins
+        uses: actions/download-artifact@v4
+        with:
+          name: mdbook-plugins
+          path: /usr/local/bin
+
+      - name: Make plugins executable
+        run: |
+          sudo chmod +x /usr/local/bin/mdbook-footnote
+          sudo chmod +x /usr/local/bin/mdbook-graphviz
+
+      - name: Install mdbook-mermaid
+        run: |
+          wget -qO mermaid.tar.gz \
+            "https://github.com/badboy/mdbook-mermaid/releases/download/v${MDBOOK_MERMAID_VERSION}/mdbook-mermaid-v${MDBOOK_MERMAID_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          sudo tar xf mermaid.tar.gz -C /usr/local/bin
+          rm -rf mermaid.tar.gz
+
+      - name: Prepare Assets Directories
+        run: mkdir -p src/fonts src/assets theme
+
+      - name: Setup Catppuccin Theme
+        run: |
+          # Create theme directory
+          mkdir -p theme
+
+          # Download latest Catppuccin theme
+          curl -sSfL -o theme/catppuccin.css \
+            https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin.css
+
+          # Download Catppuccin admonish theme
+          curl -sSfL -o theme/catppuccin-admonish.css \
+            https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin-admonish.css
+
+          # Download default theme's index.hbs for customization
+          curl -sSfL -o theme/index.hbs \
+            https://raw.githubusercontent.com/rust-lang/mdBook/master/src/theme/index.hbs
+
+          # Update index.hbs theme options
+          sed -i 's/Light/Latte/; s/Rust/Frappé/; s/Coal/Macchiato/; s/Navy/Mocha/; /Ayu/d' theme/index.hbs
+
+      - name: Download Additional Assets
+        run: |
+          # Devicon Fonts and CSS
+          curl -sSf \
+            -o devicon.min.css \
+            https://raw.githubusercontent.com/devicons/devicon/master/devicon.min.css
+          curl -sSf \
+            -o src/fonts/devicon.eot \
+            https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.eot
+          curl -sSf \
+            -o src/fonts/devicon.svg \
+            https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.svg
+          curl -sSf \
+            -o src/fonts/devicon.ttf \
+            https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.ttf
+          curl -sSf \
+            -o src/fonts/devicon.woff \
+            https://raw.githubusercontent.com/devicons/devicon/master/fonts/devicon.woff
+
+          # WhichLang Assets
+          curl -sSf \
+            -o src/assets/whichlang.css \
+            https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/src/whichlang.css
+          curl -sSf \
+            -o src/assets/whichlang.js \
+            https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
+
+      - name: Build the mdBook Site
+        run: mdbook build
+
+      - name: Turn off Jekyll
+        run: touch book/.nojekyll
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./book
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        if: ${{ github.ref == 'refs/heads/main' }}
