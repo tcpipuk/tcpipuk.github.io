@@ -26,36 +26,39 @@ jobs:
       - name: Install System Dependencies
         run: sudo apt-get update && sudo apt-get install -y graphviz
 
-      - name: Install mdBook and Plugins
+      - name: Install mdBook
         run: |
-          # Install mdBook
           wget -qO mdbook.tar.gz \
             "https://github.com/rust-lang/mdBook/releases/latest/download/mdbook-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf mdbook.tar.gz -C /usr/local/bin mdbook
+          sudo tar xf mdbook.tar.gz -C /usr/local/bin
           rm -rf mdbook.tar.gz
 
-          # Install mdbook-admonish
+      - name: Install mdbook-admonish
+        run: |
           wget -qO admonish.tar.gz \
             "https://github.com/tommilligan/mdbook-admonish/releases/latest/download/mdbook-admonish-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf admonish.tar.gz -C /usr/local/bin mdbook-admonish
+          sudo tar xf admonish.tar.gz -C /usr/local/bin
           rm -rf admonish.tar.gz
 
-          # Install mdbook-footnote
+      - name: Install mdbook-footnote
+        run: |
           wget -qO footnote.tar.gz \
             "https://github.com/daviddrysdale/mdbook-footnote/releases/latest/download/mdbook-footnote-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf footnote.tar.gz -C /usr/local/bin mdbook-footnote
+          sudo tar xf footnote.tar.gz -C /usr/local/bin
           rm -rf footnote.tar.gz
 
-          # Install mdbook-graphviz
+      - name: Install mdbook-graphviz
+        run: |
           wget -qO graphviz.tar.gz \
             "https://github.com/dylanowen/mdbook-graphviz/releases/latest/download/mdbook-graphviz-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf graphviz.tar.gz -C /usr/local/bin mdbook-graphviz
+          sudo tar xf graphviz.tar.gz -C /usr/local/bin
           rm -rf graphviz.tar.gz
 
-          # Install mdbook-mermaid
+      - name: Install mdbook-mermaid
+        run: |
           wget -qO mermaid.tar.gz \
             "https://github.com/badboy/mdbook-mermaid/releases/latest/download/mdbook-mermaid-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf mermaid.tar.gz -C /usr/local/bin mdbook-mermaid
+          sudo tar xf mermaid.tar.gz -C /usr/local/bin
           rm -rf mermaid.tar.gz
 
       - name: Prepare Assets Directories
