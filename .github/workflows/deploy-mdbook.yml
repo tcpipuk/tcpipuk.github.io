@@ -43,7 +43,12 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build mdbook-footnote
-        run: cargo install mdbook-footnote
+        run: |
+          if ! cargo install --list | grep -q "^mdbook-footnote"; then
+            cargo install mdbook-footnote
+          else
+            echo "mdbook-footnote is already installed, skipping build"
+          fi
 
       - name: Upload Binary
         uses: actions/upload-artifact@v4
