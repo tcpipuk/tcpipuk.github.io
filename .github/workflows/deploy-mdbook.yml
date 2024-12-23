@@ -16,11 +16,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-footnote:
+  build-deps:
     runs-on: ubuntu-latest
     steps:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Configure sccache
+        run: |
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.2
+        with:
+          version: "1.1.1"
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2.2.1
 
       - name: Build mdbook-footnote
         run: cargo install mdbook-footnote
@@ -33,7 +46,7 @@ jobs:
           retention-days: 1
 
   deploy-mdbook:
-    needs: build-footnote
+    needs: build-deps
     runs-on: ubuntu-latest
     env:
       MDBOOK_VERSION: "0.4.43"
@@ -73,10 +86,11 @@ jobs:
 
       - name: Install mdbook-graphviz
         run: |
-          wget -qO graphviz.tar.gz \
-            "https://github.com/dylanowen/mdbook-graphviz/releases/download/v${MDBOOK_GRAPHVIZ_VERSION}/mdbook-graphviz-v${MDBOOK_GRAPHVIZ_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf graphviz.tar.gz -C /usr/local/bin
-          rm -rf graphviz.tar.gz
+          wget -qO graphviz.zip \
+            "https://github.com/dylanowen/mdbook-graphviz/releases/download/v${MDBOOK_GRAPHVIZ_VERSION}/mdbook-graphviz_v${MDBOOK_GRAPHVIZ_VERSION}_x86_64-unknown-linux-musl.zip"
+          unzip -o graphviz.zip -d /usr/local/bin
+          sudo chmod +x /usr/local/bin/mdbook-graphviz
+          rm -rf graphviz.zip
 
       - name: Install mdbook-mermaid
         run: |
