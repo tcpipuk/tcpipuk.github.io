@@ -32,7 +32,7 @@ jobs:
             ~/.cargo/git
             ~/.cargo/registry
             target
-          key: cargo-deps-${{ runner.os }}-${{ runner.arch }}-${{ env.ImageOS }}
+          key: ${{ runner.os }}-${{ runner.arch }}-cargo-deps
 
       - name: Check for existing binaries
         id: check-binaries
