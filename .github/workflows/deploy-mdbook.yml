@@ -55,7 +55,9 @@ jobs:
 
       - name: Build mdbook-footnote
         if: steps.check-footnote.outputs.exists != 'true'
-        run: cargo install mdbook-footnote
+        run: |
+          mkdir -p target
+          cargo install mdbook-footnote --target-dir target
 
       - name: Check for existing mdbook-graphviz
         id: check-graphviz
@@ -70,7 +72,9 @@ jobs:
 
       - name: Build mdbook-graphviz
         if: steps.check-graphviz.outputs.exists != 'true'
-        run: cargo install mdbook-graphviz --version ${MDBOOK_GRAPHVIZ_VERSION}
+        run: |
+          mkdir -p target
+          cargo install mdbook-graphviz --version ${MDBOOK_GRAPHVIZ_VERSION} --target-dir target
 
       - name: Upload Binaries
         uses: actions/upload-artifact@v4
