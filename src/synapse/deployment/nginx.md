@@ -397,6 +397,11 @@ location ~* ^/_matrix/((client|federation)/[^/]+/)media/ {
   include proxy.conf;
 }
 
+location ~* ^/_matrix/media/v3/upload {
+  set $proxy_pass http://synapse_inbound_media;
+  include proxy.conf;
+}
+
 # Matrix default
 location /_matrix/ {
   set $proxy_pass http://synapse_inbound_main;
