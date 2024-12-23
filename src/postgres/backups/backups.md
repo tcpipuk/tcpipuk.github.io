@@ -2,7 +2,8 @@
 
 ## 4. Backup Script
 
-I've written the following to take a backup - the files are automatically compressed using gzip before they're written to save space and minimise wear on your storage:
+I've written the following to take a backup - the files are automatically compressed using gzip
+before they're written to save space and minimise wear on your storage:
 
 ```bash
 #!/bin/bash
@@ -42,9 +43,12 @@ else
 fi
 ```
 
-To configure, simply set the `BACKUP_DIR` to the location you want your backups to be stored, the `NUM_BACKUPS_TO_KEEP` to the number of previous backups to store before removal, and update the `docker exec` line to match your replica's details.
+To configure, simply set the `BACKUP_DIR` to the location you want your backups to be stored, the
+`NUM_BACKUPS_TO_KEEP` to the number of previous backups to store before removal, and update the
+`docker exec` line to match your replica's details.
 
-You could also tailor the script to your specific needs, for example, by adding email notifications to let you know when backups are failing for any reason.
+You could also tailor the script to your specific needs, for example, by adding email notifications
+to let you know when backups are failing for any reason.
 
 Make sure to mark this script as executable so it can be run:
 

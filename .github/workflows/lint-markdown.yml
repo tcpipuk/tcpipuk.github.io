@@ -1,0 +1,46 @@
+name: Lint Markdown Files
+
+on:
+  push:
+    branches:
+      - "*"
+    paths:
+      - "**.md"
+  workflow_dispatch:
+
+jobs:
+  lint-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Create markdownlint config
+        run: |
+          cat > .markdownlint.json << 'EOF'
+          {
+            "default": true,
+            "MD013": {
+              "code_blocks": false,
+              "headings": false,
+              "line_length": 100,
+              "strict": false,
+              "tables": false
+            },
+            "MD033": {
+              "allowed_elements": ["br"]
+            }
+          }
+          EOF
+
+      - name: Run markdownlint
+        run: markdownlint '**/*.md' --ignore node_modules

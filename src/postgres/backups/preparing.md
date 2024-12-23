@@ -24,17 +24,22 @@ services:
       - ./pgsql:/var/lib/postgresql/data
 ```
 
-As you can see, I'm using a "sockets" volume for Unix socket communication, which as well as avoiding unnecessary open TCP ports, provides a lower latency connection when containers are on the same host.
+As you can see, I'm using a "sockets" volume for Unix socket communication, which as well as
+avoiding unnecessary open TCP ports, provides a lower latency connection when containers are on the
+same host.
 
-To do the same, just ensure you have this in your `postgresql.conf` to let Postgres know where to write its sockets:
+To do the same, just ensure you have this in your `postgresql.conf` to let Postgres know where to
+write its sockets:
 
 ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 unix_socket_directories = '/sockets'
 ```
 
-If you're not using sockets (e.g. your replica's on a different host) then you may need to adjust some of the later steps to replicate via TCP port instead.
+If you're not using sockets (e.g. your replica's on a different host) then you may need to adjust
+some of the later steps to replicate via TCP port instead.
 
-I've then added this replica, almost identical except for the standby configuration with lower resource limits:
+I've then added this replica, almost identical except for the standby configuration with lower
+resource limits:
 
 ```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
   db-replica:
@@ -55,4 +60,6 @@ I've then added this replica, almost identical except for the standby configurat
       - ./pgreplica:/var/lib/postgresql/data
 ```
 
-You can try setting lower limits, I prefer to allow the replica 2 cores to avoid replication interruptions while the backup runs, as on fast storage this can easily cause one core to run at 100%.
+You can try setting lower limits, I prefer to allow the replica 2 cores to avoid replication
+interruptions while the backup runs, as on fast storage this can easily cause one core to run at
+100%.
