@@ -5,8 +5,8 @@
 1. [Monitor Database Connections](#monitor-database-connections)
 2. [Adjust Synapse Connection Limits](#adjust-synapse-connection-limits)
 3. [Analysing Query Performance](#analysing-query-performance)
-	1. [Slowest Queries](#slowest-queries)
-	2. [Slowest Queries by Type](#slowest-queries-by-type)
+   1. [Slowest Queries](#slowest-queries)
+   2. [Slowest Queries by Type](#slowest-queries-by-type)
 4. [Continuous Monitoring and Iterative Tuning](#continuous-monitoring-and-iterative-tuning)
 
 ### Monitor Database Connections

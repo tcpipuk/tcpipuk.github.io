@@ -3,7 +3,7 @@
 ## 9. Migrating Major Versions
 
 1. [Preparing for Migration](#preparing-for-migration)
-	1. [Creating a Backup with pg\_dumpall](#creating-a-backup-with-pg_dumpall)
+   1. [Creating a Backup with pg\_dumpall](#creating-a-backup-with-pg_dumpall)
 2. [Setting Up the New PostgreSQL Version](#setting-up-the-new-postgresql-version)
 3. [Restoring Data Manually](#restoring-data-manually)
 4. [Completing the Migration](#completing-the-migration)

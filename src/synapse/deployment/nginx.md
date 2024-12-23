@@ -4,12 +4,12 @@
 
 1. [Docker Compose](#docker-compose)
 2. [Configuration Files](#configuration-files)
-	1. [nginx.conf](#nginxconf)
-	2. [upstreams.conf](#upstreamsconf)
-	3. [maps.conf](#mapsconf)
-	4. [locations.conf](#locationsconf)
-	5. [proxy.conf](#proxyconf)
-	6. [private.conf](#privateconf)
+   1. [nginx.conf](#nginxconf)
+   2. [upstreams.conf](#upstreamsconf)
+   3. [maps.conf](#mapsconf)
+   4. [locations.conf](#locationsconf)
+   5. [proxy.conf](#proxyconf)
+   6. [private.conf](#privateconf)
 
 ### Docker Compose
 

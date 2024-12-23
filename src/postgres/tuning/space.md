@@ -3,7 +3,7 @@
 ## 7. Disk Space
 
 1. [Database Size](#database-size)
-	1. [Synapse Compress State Utility](#synapse-compress-state-utility)
+   1. [Synapse Compress State Utility](#synapse-compress-state-utility)
 2. [Media Size](#media-size)
 
 Efficient disk space management ensures that your server remains responsive and that you're making

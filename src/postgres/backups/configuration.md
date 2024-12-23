@@ -15,7 +15,7 @@
    ```
 
    It'll need to be restarted for these changes to take effect, which would be safest done now
-	before copying the data:
+   before copying the data:
 
    ```bash
    docker compose down db && docker compose up db -d
@@ -24,24 +24,24 @@
 2. **Preparing Replica Data**:
 
    Postgres replication involves streaming updates as they're made to the database, so to start
-	we'll need to create a duplicate of the current database to use for the replica.
+   we'll need to create a duplicate of the current database to use for the replica.
 
    You can create a copy of your entire database like this, just substitute the container name and
-	user as required:
+   user as required:
 
    ```bash
    docker exec -it synapse-db-1 pg_basebackup -h /sockets -U synapse -D /tmp/pgreplica
    ```
 
    The data is initially written to /tmp/ inside the container as it's safest for permissions. We
-	can then move it to /var/lib/postgresql/data/ so we can more easily access it from the host OS:
+   can then move it to /var/lib/postgresql/data/ so we can more easily access it from the host OS:
 
    ```bash
    docker exec -it synapse-db-1 mv /tmp/pgreplica /var/lib/postgresql/data/
    ```
 
    You can hopefully now reach the data and move it to a new directory for your replica, updating
-	the ownership to match your existing Postgres data directory:
+   the ownership to match your existing Postgres data directory:
 
    ```bash
    mv ./pgsql/pgreplica ./
@@ -51,7 +51,7 @@
 3. **Replica Postgres Configuration**:
 
    Now for the replica's `postgresql.conf`, add this to the bottom to tell it that it's a secondary
-	and scale back its resource usage as it won't be actively serving clients:
+   and scale back its resource usage as it won't be actively serving clients:
 
    ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
    port = 5433

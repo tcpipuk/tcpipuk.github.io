@@ -17,7 +17,7 @@ and presented in a structured, readable format.
    `book.toml`.
 2. **Continuous Deployment**: The `.github/workflows/mdbook.yml` file configures GitHub Actions, so
    whenever there's a push to the repository, GitHub Actions auto-builds the project using mdBook
-	and deploys it to GitHub Pages.
+   and deploys it to GitHub Pages.
 3. **Customisation**: Various CSS and JavaScript files (`src/assets/`) are included to tweak the
    appearance and behaviour of the site.
 

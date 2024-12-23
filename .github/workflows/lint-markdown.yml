@@ -42,4 +42,38 @@ jobs:
           EOF
 
       - name: Run markdownlint
-        run: markdownlint '**/*.md' --ignore node_modules
+        id: lint
+        continue-on-error: true
+        run: |
+          # Run markdownlint and capture output
+          OUTPUT=$(markdownlint '**/*.md' --ignore node_modules 2>&1)
+          EXIT_CODE=$?
+
+          # Create a summary
+          {
+            echo "## Markdown Lint Results"
+            echo
+            if [ $EXIT_CODE -eq 0 ]; then
+              echo "✅ All markdown files pass linting"
+            else
+              echo "❌ Found linting issues"
+              echo
+              echo "### Issues by File"
+              echo
+              echo "\`\`\`"
+              # Process the output to group by file
+              echo "$OUTPUT" | awk -F':' '
+              {
+                file=$1
+                if (!files[file]) {
+                  files[file] = 1
+                  print "\n" file ":"
+                }
+                sub(/^[^:]*:[^:]*:/, "  Line " $2 ":")
+                print
+              }'
+              echo "\`\`\`"
+            fi
+          } >> $GITHUB_STEP_SUMMARY
+
+          exit $EXIT_CODE
