@@ -42,13 +42,20 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build mdbook-footnote
+      - name: Check for existing mdbook-footnote
+        id: check-footnote
         run: |
-          if ! cargo install --list | grep -q "^mdbook-footnote"; then
-            cargo install mdbook-footnote
+          if [ -f ~/.cargo/bin/mdbook-footnote ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "mdbook-footnote binary found, will skip build"
           else
-            echo "mdbook-footnote is already installed, skipping build"
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "mdbook-footnote binary not found, will build"
           fi
+
+      - name: Build mdbook-footnote
+        if: steps.check-footnote.outputs.exists != 'true'
+        run: cargo install mdbook-footnote
 
       - name: Upload Binary
         uses: actions/upload-artifact@v4
