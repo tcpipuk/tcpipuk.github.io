@@ -87,27 +87,11 @@ jobs:
 
       - name: Install mdbook-graphviz
         run: |
-          # Download the file
           wget -qO graphviz.zip \
             "https://github.com/dylanowen/mdbook-graphviz/releases/download/v${MDBOOK_GRAPHVIZ_VERSION}/mdbook-graphviz_v${MDBOOK_GRAPHVIZ_VERSION}_x86_64-unknown-linux-musl.zip"
-
-          # Debug: List zip contents
-          unzip -l graphviz.zip
-
-          # Debug: List current directory contents
-          ls -alh
-
-          # Debug: Create temp dir and extract there to inspect
-          mkdir -p /tmp/graphviz
-          unzip -o graphviz.zip -d /tmp/graphviz
-          ls -la /tmp/graphviz
-
-          # Original installation
-          sudo mv /tmp/graphviz/mdbook-graphviz /usr/local/bin/
+          unzip -o graphviz.zip -d /usr/local/bin
           sudo chmod +x /usr/local/bin/mdbook-graphviz
-
-          # Cleanup
-          rm -rf graphviz.zip /tmp/graphviz
+          rm -rf graphviz.zip
 
       - name: Install mdbook-mermaid
         run: |
@@ -125,7 +109,7 @@ jobs:
           curl -sSfL -o theme/catppuccin.css \
             https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin.css
           # Keep only index.hbs from default theme
-          mdbook init --theme .
+          # mdbook init --theme .
           find ./theme -type f ! -name 'index.hbs' -delete
           rm -d fonts css || true
           # Update index.hbs theme options
