@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   build-deps:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
@@ -57,22 +57,43 @@ jobs:
         if: steps.check-footnote.outputs.exists != 'true'
         run: cargo install mdbook-footnote
 
-      - name: Upload Binary
+      - name: Check for existing mdbook-graphviz
+        id: check-graphviz
+        run: |
+          if [ -f ~/.cargo/bin/mdbook-graphviz ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "mdbook-graphviz binary found, will skip build"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "mdbook-graphviz binary not found, will build"
+          fi
+
+      - name: Build mdbook-graphviz
+        if: steps.check-graphviz.outputs.exists != 'true'
+        run: cargo install mdbook-graphviz --version ${MDBOOK_GRAPHVIZ_VERSION}
+
+      - name: Upload Binaries
         uses: actions/upload-artifact@v4
         with:
-          name: mdbook-footnote
-          path: ~/.cargo/bin/mdbook-footnote
+          name: mdbook-plugins
+          path: |
+            ~/.cargo/bin/mdbook-footnote
+            ~/.cargo/bin/mdbook-graphviz
           retention-days: 1
 
   deploy-mdbook:
     needs: build-deps
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
 
       - name: Install System Dependencies
-        run: sudo apt-get update && sudo apt-get install -y graphviz
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends graphviz
 
       - name: Install mdBook
         run: |
@@ -88,22 +109,16 @@ jobs:
           sudo tar xf admonish.tar.gz -C /usr/local/bin
           rm -rf admonish.tar.gz
 
-      - name: Download mdbook-footnote
+      - name: Download mdbook plugins
         uses: actions/download-artifact@v4
         with:
-          name: mdbook-footnote
+          name: mdbook-plugins
           path: /usr/local/bin
 
-      - name: Make footnote executable
-        run: sudo chmod +x /usr/local/bin/mdbook-footnote
-
-      - name: Install mdbook-graphviz
+      - name: Make plugins executable
         run: |
-          wget -qO graphviz.zip \
-            "https://github.com/dylanowen/mdbook-graphviz/releases/download/v${MDBOOK_GRAPHVIZ_VERSION}/mdbook-graphviz_v${MDBOOK_GRAPHVIZ_VERSION}_x86_64-unknown-linux-musl.zip"
-          unzip -o graphviz.zip -d /usr/local/bin
+          sudo chmod +x /usr/local/bin/mdbook-footnote
           sudo chmod +x /usr/local/bin/mdbook-graphviz
-          rm -rf graphviz.zip
 
       - name: Install mdbook-mermaid
         run: |
@@ -123,6 +138,10 @@ jobs:
           # Download latest Catppuccin theme
           curl -sSfL -o theme/catppuccin.css \
             https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin.css
+
+          # Download Catppuccin admonish theme
+          curl -sSfL -o theme/catppuccin-admonish.css \
+            https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin-admonish.css
 
           # Download default theme's index.hbs for customization
           curl -sSfL -o theme/index.hbs \
