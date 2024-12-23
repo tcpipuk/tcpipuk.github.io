@@ -1,20 +1,22 @@
-# Deploying a Synapse Homeserver with Docker
+# PostgreSQL Configuration
 
-## PostgreSQL Configuration
-
-1. [PostgreSQL Configuration](#postgresql-configuration)
-2. [Creating Database](#creating-database)
-3. [Configuring PostgreSQL](#configuring-postgresql)
+1. [Creating Database](#creating-database)
+2. [Configuring PostgreSQL](#configuring-postgresql)
+3. [Networking](#networking)
+	1. [Unix Sockets](#unix-sockets)
+	2. [TCP Ports](#tcp-ports)
 
 ## Creating Database
 
-Before we can modify the PostgreSQL config, we need to let the container generate it, so for now (whether you're deploying a single database or a replica too) just start the primary database like this:
+Before we can modify the PostgreSQL config, we need to let the container generate it, so for now
+(whether you're deploying a single database or a replica too) just start the primary database like this:
 
 ```bash
 docker compose up db
 ```
 
-You should see the image be downloaded, then a few seconds later it should have started, with a few logs to say it's created the database and started listening, e.g.
+You should see the image be downloaded, then a few seconds later it should have started, with a few
+logs to say it's created the database and started listening, e.g.
 
 ```sql,icon=.devicon-postgresql-plain
 PostgreSQL init process complete; ready for start up.
@@ -29,7 +31,8 @@ PostgreSQL init process complete; ready for start up.
 
 ## Configuring PostgreSQL
 
-Now you can hit Ctrl+C to close it, and you should find a "psql16" folder now exists with a "postgresql.conf" file inside it.
+Now you can hit Ctrl+C to close it, and you should find a "psql16" folder now exists with a
+`postgresql.conf` file inside it.
 
 I recommend removing it entirely and replacing it with a template of selected values like this:
 
@@ -103,9 +106,12 @@ timezone = 'Europe/London'
 #shared_preload_libraries = 'pg_buffercache,pg_stat_statements'
 ```
 
-This is quite a high spec configuration, designed for a server with over 16 cores and 64GB RAM and using SSD storage, so you may wish to consult [my tuning guide](../../postgres/tuning/workers.md) to decide on the best amount of workers and cache for your situation.
+This is quite a high spec configuration, designed for a server with over 16 cores and 64GB RAM and
+using SSD storage, so you may wish to consult [my tuning guide](../../postgres/tuning/workers.md)
+to decide on the best amount of workers and cache for your situation.
 
-If in doubt, it's better to be _more_ conservative, and increase values over time as needed - on a quad-core server with 8GB RAM, these would be reasonable values to start:
+If in doubt, it's better to be _more_ conservative, and increase values over time as needed - on a
+quad-core server with 8GB RAM, these would be reasonable values to start:
 
 ```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
 # Workers
@@ -123,3 +129,78 @@ shared_buffers = 1GB
 wal_buffers = 32MB
 work_mem = 28MB
 ```
+
+## Networking
+
+Choosing the optimal communication method between Synapse and PostgreSQL is essential for
+performance. There are two primary avenues to consider, Unix sockets and TCP ports, which I'll
+cover below:
+
+### Unix Sockets
+
+Unix sockets provide a high-speed communication channel between processes on the same machine,
+bypassing the network stack and reducing latency. This method is ideal when both Synapse and
+PostgreSQL are hosted on the same system. Here's how to set it up:
+
+1. Edit the `postgresql.conf` file to specify the directory for the Unix socket:
+
+	```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
+	# Set the directory for the Unix socket
+	unix_socket_directories = '/var/run/postgresql'
+	```
+
+	Make sure the directory exists and has the correct permissions, then restart the PostgreSQL service.
+
+2. Configure Synapse to use Unix sockets by editing the `homeserver.yaml` file:
+
+	```yaml,filepath=homeserver.yaml
+	database:
+	name: psycopg2
+	args:
+		 user: synapse_user
+		 password: your_password
+		 database: synapse
+		 host: /var/run/postgresql
+	```
+
+	After setting the `host` field to the Unix socket directory, restart Synapse for the changes to
+	take effect.
+
+	**Note**: Do **not** include the socket filename as Postgres auto-generates the name based on
+	the port number. This also means that, if you've changed the default port number in either
+	Synapse or PostgreSQL, you must ensure these fields remain after switching to sockets, so both
+	applications generate and look for the correct socket name.
+
+### TCP Ports
+
+When Synapse and PostgreSQL are on different hosts or when Unix sockets are not an option, TCP
+ports are used for communication. This method is more versatile and allows for distributed setups.
+Here's how to configure TCP communication:
+
+1. PostgreSQL listens on TCP port 5432 by default, but you can verify or change this in the
+	`postgresql.conf` file:
+
+	```ini,icon=.devicon-postgresql-plain,filepath=postgresql.conf
+	# Listen for TCP connections on the following addresses and ports
+	listen_addresses = '*'
+	port = 5432
+	```
+
+	Ensure PostgreSQL is configured to accept connections from the Synapse host, and consider
+	implementing firewall rules and strong authentication to secure the connection.
+
+2. Point Synapse to the correct TCP port and address in the `homeserver.yaml` file:
+
+	```yaml,filepath=homeserver.yaml
+	database:
+	name: psycopg2
+	args:
+		 user: synapse_user
+		 password: your_password
+		 database: synapse
+		 host: postgres.example.com
+		 port: 5432
+	```
+
+	Replace `postgres.example.com` with the actual hostname or IP address of your PostgreSQL server.
+	Restart Synapse to apply the new configuration.

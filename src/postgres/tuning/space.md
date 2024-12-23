@@ -2,11 +2,15 @@
 
 ## 7. Disk Space
 
-Efficient disk space management ensures that your server remains responsive and that you're making the most of your available resources. This is difficult to cover in detail, as the applications and usage of a Matrix server vary wildly, but I've included some general guidance below:
+Efficient disk space management ensures that your server remains responsive and that you're making
+the most of your available resources. This is difficult to cover in detail, as the applications and
+usage of a Matrix server vary wildly, but I've included some general guidance below:
 
 ### Database Size
 
-Over time, your PostgreSQL database will grow as more data is added. It's important to keep an eye on the size of your tables, especially those that are known to grow rapidly, such as `state_groups_state` in Synapse.
+Over time, your PostgreSQL database will grow as more data is added. It's important to keep an eye
+on the size of your tables, especially those that are known to grow rapidly, such as
+`state_groups_state` in Synapse.
 
 This query will list your largest tables:
 
@@ -32,7 +36,8 @@ LIMIT 10;
 ...
 ```
 
-On a Synapse server, you should find `state_groups_state` is by far the largest one, and can see which rooms are the largest with a query like this:
+On a Synapse server, you should find `state_groups_state` is by far the largest one, and can see
+which rooms are the largest with a query like this:
 
 ```sql,icon=.devicon-postgresql-plain,filepath=psql
 WITH room_counts AS (
@@ -65,15 +70,19 @@ LIMIT 10;
 
 #### Synapse Compress State Utility
 
-For Synapse, the `state_groups_state` table can grow significantly. To help manage this, The Matrix Foundation has developed a tool called [Synapse Compress State](https://github.com/matrix-org/rust-synapse-compress-state) that can compress state maps without losing any data.
-
-For Docker users, I maintain [a Docker image](https://hub.docker.com/r/tcpipuk/rust-synapse-compress-state) of the project, so you can run it without any other dependencies.
+For Synapse, the `state_groups_state` table can grow significantly. To help manage this, The Matrix
+Foundation has developed a tool called [Synapse Compress State](https://github.com/matrix-org/rust-synapse-compress-state)
+that can compress state maps without losing any data.
 
 ### Media Size
 
-Media files, such as images and videos and other message attachments, are stored on the filesystem rather than the database, but are tracked in PostgreSQL. Large media files can consume significant disk space, and it can be a challenge to narrow down what is using all of the space through Synapse directly.
+Media files, such as images and videos and other message attachments, are stored on the filesystem
+rather than the database, but are tracked in PostgreSQL. Large media files can consume significant
+disk space, and it can be a challenge to narrow down what is using all of the space through Synapse
+directly.
 
-With this query you can see how many files of each type were uploaded each month, and the total disk space that consumes:
+With this query you can see how many files of each type were uploaded each month, and the total disk
+space that consumes:
 
 ```sql,icon=.devicon-postgresql-plain,filepath=psql
 WITH media_size AS (
@@ -102,23 +111,3 @@ LIMIT 10;
  2023 |     8 | image/png  |  2614 | 1316 MB
  ...
 ```
-
-#### Managing Media Files
-
-Synapse provides [configuration options](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#media_retention) to manage media files, such as:
-
-- `media_store_path`: Defines where on the filesystem media files are stored.
-- `max_upload_size`: Sets the maximum size for uploaded media files.
-- `media_retention`: Configures the duration for which media files are retained before being automatically deleted.
-
-Here's an example of how you might configure these in your `homeserver.yaml`:
-
-```yaml,filepath=homeserver.yaml
-media_store_path: "/var/lib/synapse/media"
-max_upload_size: "10M"
-media_retention:
-  local_media_lifetime: 3y
-  remote_media_lifetime: 30d
-```
-
-It's important to note that this takes effect shortly after the next server start, so make sure you're not removing anything you want to keep. Remote media in particular is less of a concern as this can be re-retrieved later from other homeservers on demand, but some may wish to keep a local copy in case that server goes offline in the future.

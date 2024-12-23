@@ -1,15 +1,12 @@
-# Deploying a Synapse Homeserver with Docker
+# Docker Compose with Templates
 
-## Docker Compose with Templates
-
-1. [Docker Compose with Templates](#docker-compose-with-templates)
-2. [Docker Engine](#docker-engine)
-3. [Environment Files](#environment-files)
-4. [YAML Templating](#yaml-templating)
-5. [Unix Sockets](#unix-sockets)
-6. [Redis](#redis)
-7. [PostgreSQL Database](#postgresql-database)
-8. [Synapse](#synapse)
+1. [Docker Engine](#docker-engine)
+2. [Environment Files](#environment-files)
+3. [YAML Templating](#yaml-templating)
+4. [Unix Sockets](#unix-sockets)
+5. [Redis](#redis)
+6. [PostgreSQL Database](#postgresql-database)
+7. [Synapse](#synapse)
 
 ## Docker Engine
 

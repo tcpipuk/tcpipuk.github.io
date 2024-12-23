@@ -1,12 +1,9 @@
-# Deploying a Synapse Homeserver with Docker
+# Synapse Configuration
 
-## Synapse Configuration
-
-1. [Synapse Configuration](#synapse-configuration)
-2. [Default File](#default-file)
-3. [Log Config](#log-config)
-4. [Homeserver Config](#homeserver-config)
-5. [Cache Optimisation](#cache-optimisation)
+1. [Default File](#default-file)
+2. [Log Config](#log-config)
+3. [Homeserver Config](#homeserver-config)
+4. [Cache Optimisation](#cache-optimisation)
 
 ## Default File
 
@@ -28,11 +25,15 @@ total 16K
 -rw-r--r-- 1 root root 1.3K Dec 20 23:20 homeserver.yaml
 ```
 
-The signing key is unique to your server and is vital to maintain for other servers to trust yours in the future. You can wipe the entire database and still be able to federate with other servers if your signing key is the same, so it's worthwhile backing this up now.
+The signing key is unique to your server and is vital to maintain for other servers to trust yours
+in the future. You can wipe the entire database and still be able to federate with other servers if
+your signing key is the same, so it's worthwhile backing this up now.
 
 ## Log Config
 
-For the log config, by default this is very barebones and just logs straight to console, but you could replace it with something like this to keep a daily log for the past 3 days in your "logs" folder:
+For the log config, by default this is very barebones and just logs straight to console, but you
+could replace it with something like this to keep a daily log for the past 3 days in your `logs`
+folder:
 
 ```yaml,filepath=mydomain.com.log.config
 version: 1
@@ -74,9 +75,13 @@ root:
 
 ## Homeserver Config
 
-By default, this file is quite short and relies a lot on defaults. There is no harm adding blank lines between entries here to make it more readable, or adding comments (starting with the # hash character) to explain what lines mean.
+By default, this file is quite short and relies a lot on defaults. There is no harm adding blank
+lines between entries here to make it more readable, or adding comments (starting with the `#` hash
+character) to explain what lines mean.
 
-**Note: The "secret" or "key" lines are unique to your server and things are likely to misbehave if you change some of them after the server is running.** It's generally best to leave them safe at the bottom of the file while you work on the other values.
+**Note: The "secret" or "key" lines are unique to your server and things are likely to misbehave if
+you change some of them after the server is running.** It's generally best to leave them safe at the
+bottom of the file while you work on the other values.
 
 Here's an example with comments you may wish to use to start with some safe defaults:
 
@@ -268,13 +273,18 @@ recaptcha_private_key: "SuperSecretValue5" # Private key for reCAPTCHA
 worker_replication_secret: "SuperSecretValue6" # Secret for communication between Synapse and workers
 ```
 
-In this case, I've included typical configuration for [Authentik](https://goauthentik.io/integrations/services/matrix-synapse/) in case you want to use SSO instead of Synapse's built-in password database - it's perfectly safe to omit this `oidc_providers:` section if you're not using SSO, but [the official Authentik guide](https://goauthentik.io/integrations/services/matrix-synapse/) is quite quick and easy if you do wish to use it [after installing Authentik](https://goauthentik.io/docs/installation/docker-compose).
+In this case, I've included typical configuration for [Authentik](https://goauthentik.io/integrations/services/matrix-synapse/)
+in case you want to use SSO instead of Synapse's built-in password database - it's perfectly safe to
+omit this `oidc_providers:` section if you're not using SSO, but [the official Authentik guide](https://goauthentik.io/integrations/services/matrix-synapse/)
+is quite quick and easy if you do wish to use it [after installing Authentik](https://goauthentik.io/docs/installation/docker-compose).
 
 ## Cache Optimisation
 
-Most of the example configuration above is fairly standard, however of particular note to performance tuning is the cache configuration.
+Most of the example configuration above is fairly standard, however of particular note to
+performance tuning is the cache configuration.
 
-The defaults (at time of writing) are below and in the official documentation at [event_cache_size](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#event_cache_size) and [caches](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#caches-and-associated-values):
+The defaults (at time of writing) are below and in the official documentation at [event_cache_size](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#event_cache_size)
+and [caches](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#caches-and-associated-values):
 
 ```yaml,filepath=homeserver.yaml
 event_cache_size: 10K
@@ -287,18 +297,23 @@ caches:
 
 In this default case:
 
-- All of the caches (including the `event_cache_size`) are halved (so each worker can only actually hold 5,000 events as a maximum)
+- All of the caches (including the `event_cache_size`) are halved (so each worker can only actually
+  hold 5,000 events as a maximum)
 - Every entry in the cache expires within 30 minutes
-- `cache_autotuning` is disabled, so entries leave the cache after 30 minutes or when the server needs to cache something and there isn't enough space to store it.
+- `cache_autotuning` is disabled, so entries leave the cache after 30 minutes or when the server
+  needs to cache something and there isn't enough space to store it.
 
-In particular, that last option is a problem, as we have multiple containers, so we don't want every container seeking to fill its caches to the max then waiting for the expiry time to lose entries that have only been read once!
+In particular, that last option is a problem, as we have multiple containers, so we don't want every
+container seeking to fill its caches to the max then waiting for the expiry time to lose entries
+that have only been read once!
 
 I've recommended the following config, which instead:
 
 - Increases the number of events we can cache to lower load on the database
 - Enable `cache_autotuning` to remove entries that aren't frequently accessed
 - Allow entries to stay in cache longer when they're used frequently
-- Modified the limit to expand caches that are frequently accessed by large federated rooms, and restricted ones that are less frequently reused
+- Modified the limit to expand caches that are frequently accessed by large federated rooms, and
+  restricted ones that are less frequently reused
 
 ```yaml,filepath=homeserver.yaml
 event_cache_size: 30K
@@ -322,7 +337,9 @@ caches:
     min_cache_ttl: 30s
 ```
 
-Furthermore, as this is designed to be a server with more limited RAM, we've updated the "garbage collection" thresholds, so Synapse can quickly clean up older cached entries to make sure we're keeping a healthy amount of cache without running out of memory:
+Furthermore, as this is designed to be a server with more limited RAM, we've updated the "garbage
+collection" thresholds, so Synapse can quickly clean up older cached entries to make sure we're
+keeping a healthy amount of cache without running out of memory:
 
 ```yaml,filepath=homeserver.yaml
 gc_thresholds: [550, 10, 10]
