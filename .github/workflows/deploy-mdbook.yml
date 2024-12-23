@@ -6,6 +6,13 @@ on:
       - "*"
   workflow_dispatch:
 
+env:
+  SCCACHE_VERSION: "0.9.0"
+  MDBOOK_VERSION: "0.4.43"
+  MDBOOK_ADMONISH_VERSION: "1.15.0"
+  MDBOOK_GRAPHVIZ_VERSION: "0.1.6"
+  MDBOOK_MERMAID_VERSION: "0.13.0"
+
 permissions:
   contents: read
   id-token: write
@@ -28,9 +35,11 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
 
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.7
-        with:
-          version: "0.9.0"
+        run: |
+          wget -qO sccache.tar.gz \
+            "https://github.com/mozilla/sccache/releases/download/v${SCCACHE_VERSION}/sccache-dist-v${SCCACHE_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+          sudo tar xf sccache.tar.gz -C /usr/local/bin --strip-components=1
+          rm -rf sccache.tar.gz
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2.7.5
@@ -48,12 +57,6 @@ jobs:
   deploy-mdbook:
     needs: build-deps
     runs-on: ubuntu-latest
-    env:
-      MDBOOK_VERSION: "0.4.43"
-      MDBOOK_ADMONISH_VERSION: "1.15.0"
-      MDBOOK_GRAPHVIZ_VERSION: "0.1.6"
-      MDBOOK_MERMAID_VERSION: "0.13.0"
-
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
