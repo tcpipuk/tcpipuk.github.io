@@ -2,6 +2,9 @@
 
 ## 5. Maintenance
 
+1. [Vacuuming](#vacuuming)
+2. [Autovacuum](#autovacuum)
+
 Regular maintenance of your PostgreSQL database is important and, when configured correctly,
 PostgreSQL can take care of most of these duties itself.
 

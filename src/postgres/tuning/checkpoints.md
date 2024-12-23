@@ -2,6 +2,11 @@
 
 ## 6. Checkpoints and Replication
 
+1. [Understanding WAL and Checkpoints](#understanding-wal-and-checkpoints)
+2. [Checkpoint Configuration](#checkpoint-configuration)
+3. [WAL Size Configuration](#wal-size-configuration)
+4. [WAL Level Configuration](#wal-level-configuration)
+
 This section primarily deals with the performance options when committing data to disk.
 
 However, if you want to back up the database regularly without impacting the performance of the live

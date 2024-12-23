@@ -1,6 +1,6 @@
 # Tuning PostgreSQL for a Matrix Synapse Homeserver
 
-## Conclusion
+## 10. Conclusion
 
 Throughout this guide, we've touched on key areas such as network configuration, worker alignment,
 memory management, regular maintenance, replication strategies, and systematic testing, but

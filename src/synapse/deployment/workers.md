@@ -1,29 +1,38 @@
 # Deploying a Synapse Homeserver with Docker
 
-## Worker Configuration
+## 5. Worker Configuration
 
-1. [Worker Configuration](#worker-configuration)
-2. [Introduction](#introduction)
-3. [Synapse Configuration](#synapse-configuration)
-4. [Worker Config Files](#worker-config-files)
-5. [Worker Log Config](#worker-log-config)
-6. [Docker Configuration](#docker-configuration)
+1. [Introduction](#introduction)
+2. [Synapse Configuration](#synapse-configuration)
+3. [Worker Config Files](#worker-config-files)
+4. [Worker Log Config](#worker-log-config)
+5. [Docker Configuration](#docker-configuration)
 
-## Introduction
+### Introduction
 
-Due to the way Python handles multiple CPU cores, a design decision was made in Synapse to allow splitting work out between multiple copies with defined roles, rather than trying to shoehorn many processes into a single instance of Synapse.
+Due to the way Python handles multiple CPU cores, a design decision was made in Synapse to allow
+splitting work out between multiple copies with defined roles, rather than trying to shoehorn many
+processes into a single instance of Synapse.
 
-As a result, we can create multiple workers, say what we want them to do to meet our specific server's needs, and tweak the config to optimise them.
+As a result, we can create multiple workers, say what we want them to do to meet our specific
+server's needs, and tweak the config to optimise them.
 
-My suggested design is different from the [official documentation](https://matrix-org.github.io/synapse/latest/workers.html), so feel free to study that first, but my recommended model is based on months of testing of various size servers to ensure they can efficiently cope with thousands of rooms and also rooms with tens of thousands of users in them, so I hope you will find it helps.
+My suggested design is different from the [official documentation](https://matrix-org.github.io/synapse/latest/workers.html),
+so feel free to study that first, but my recommended model is based on months of testing of various
+size servers to ensure they can efficiently cope with thousands of rooms and also rooms with tens of
+thousands of users in them, so I hope you will find it helps.
 
-I've also included an [explanation with a diagram](./README.md#model-explanation) at the bottom of this page to help explain the rationale behind this design, and why it makes the best use of available CPU & RAM.
+I've also included an [explanation with a diagram](./README.md#model-explanation) at the bottom of
+this page to help explain the rationale behind this design, and why it makes the best use of
+available CPU & RAM.
 
-## Synapse Configuration
+### Synapse Configuration
 
-In the [initial homeserver.yaml](./synapse.md#homeserver-config) we didn't reference any workers, so will want to add these now.
+In the [initial homeserver.yaml](./synapse.md#homeserver-config) we didn't reference any workers,
+so will want to add these now.
 
-To begin with, let's tell Synapse the name of workers we want to assign to various roles that can be split out of the main Synapse process:
+To begin with, let's tell Synapse the name of workers we want to assign to various roles that can be
+split out of the main Synapse process:
 
 ```yaml,filepath=homeserver.yaml
 enable_media_repo: false
@@ -54,9 +63,12 @@ stream_writers:
 update_user_directory_from_worker: client_sync1
 ```
 
-Four federation senders should be plenty for most federating servers that have less than a few hundred users, but a later section will explain how to scale up your server to handle hundreds/thousands of users, should the need arise.
+Four federation senders should be plenty for most federating servers that have less than a few
+hundred users, but a later section will explain how to scale up your server to handle hundreds or
+thousands of users, should the need arise.
 
-Now we've defined the roles, we also need to add an `instance_map` to tell Synapse how to reach each worker listed in the config entries above:
+Now we've defined the roles, we also need to add an `instance_map` to tell Synapse how to reach each
+worker listed in the config entries above:
 
 ```yaml,filepath=homeserver.yaml
 instance_map:
@@ -78,9 +90,10 @@ instance_map:
     path: "/sockets/synapse_replication_tasks1.sock"
 ```
 
-## Worker Config Files
+### Worker Config Files
 
-Firstly, I recommend these be stored in a subfolder of your Synapse directory (like "workers") so they're easier to organise.
+Firstly, I recommend these be stored in a subfolder of your Synapse directory (like "workers") so
+they're easier to organise.
 
 These are typically very simple, but vary slightly depending on the worker, so I'll explain that below.
 
@@ -109,7 +122,8 @@ worker_listeners:
     port: 9000
 ```
 
-This means, for example, that the Room Workers don't need a replication socket as they are not in the instance map, but do require an inbound socket as Nginx will need to forward events to them:
+This means, for example, that the Room Workers don't need a replication socket as they are not in
+the instance map, but do require an inbound socket as Nginx will need to forward events to them:
 
 ```yaml,filepath=workers/rooms1.yaml
 worker_app: "synapse.app.generic_worker"
@@ -127,11 +141,14 @@ worker_listeners:
     port: 10101
 ```
 
-As above, I recommend having a separate log config for each type of worker to aid any investigation you need to do later, so will explain this in the following section:
+As above, I recommend having a separate log config for each type of worker to aid any investigation
+you need to do later, so will explain this in the following section:
 
-## Worker Log Config
+### Worker Log Config
 
-These have a [standard format](https://docs.python.org/3/library/logging.config.html), but here I have enabled buffered logging to lower disk I/O, and use a daily log to keep for 3 days before deleting:
+These have a [standard format](https://docs.python.org/3/library/logging.config.html), but here I
+have enabled buffered logging to lower disk I/O, and use a daily log to keep for 3 days before
+deleting:
 
 ```yaml,filepath=log.config/rooms.yaml
 version: 1
@@ -176,11 +193,16 @@ root:
   handlers: [buffer]
 ```
 
-**Note:** While Synapse is running, each line in the log (after the timestamp) starts with a string like `synapse.util.caches.lrucache` so you can control exactly what is logged for each log type by adding some of them to the `loggers` section here. In this example, I've suppressed less informative logs to make the more important ones easier to follow.
+**Note:** While Synapse is running, each line in the log (after the timestamp) starts with a string
+like `synapse.util.caches.lrucache` so you can control exactly what is logged for each log type by
+adding some of them to the `loggers` section here. In this example, I've suppressed less informative
+logs to make the more important ones easier to follow.
 
-## Docker Configuration
+### Docker Configuration
 
-Since we defined a "synapse-worker-template" and "synapse-media-template" in the previous [Docker Compose section](./docker.md#yaml-templating), these are very simple to define just below our main Synapse container:
+Since we defined a "synapse-worker-template" and "synapse-media-template" in the previous
+[Docker Compose section](./docker.md#yaml-templating), these are very simple to define just below
+our main Synapse container:
 
 ```yaml,icon=.devicon-docker-plain,filepath=docker-compose.yml
   synapse:
@@ -259,6 +281,12 @@ Since we defined a "synapse-worker-template" and "synapse-media-template" in the
       test: curl -fSs --unix-socket /sockets/synapse_replication_tasks1.sock http://localhost/health
 ```
 
-The "healthcheck" sections just need to match the socket name from each worker's config file - the `/health` endpoint listens on both replication and inbound sockets, so you can use either, depending on what the worker has available. This allows Docker to test whether the container is running, so it can be automatically restarted if there are any issues.
+The "healthcheck" sections just need to match the socket name from each worker's config file - the
+`/health` endpoint listens on both replication and inbound sockets, so you can use either, depending
+on what the worker has available. This allows Docker to test whether the container is running, so it
+can be automatically restarted if there are any issues.
 
-With all of the configuration sections above in place, and the [Nginx upstream configuration](./nginx.md#upstreamsconf) from the previous section, all you should need to do now is run `docker compose down && docker compose up -d` to bring up Synapse with the new configuration and a much higher capacity!
+With all of the configuration sections above in place, and the
+[Nginx upstream configuration](./nginx.md#upstreamsconf) from the previous section, all you should
+need to do now is run `docker compose down && docker compose up -d` to bring up Synapse with the new
+configuration and a much higher capacity!

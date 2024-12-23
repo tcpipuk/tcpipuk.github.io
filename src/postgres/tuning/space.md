@@ -2,6 +2,10 @@
 
 ## 7. Disk Space
 
+1. [Database Size](#database-size)
+	1. [Synapse Compress State Utility](#synapse-compress-state-utility)
+2. [Media Size](#media-size)
+
 Efficient disk space management ensures that your server remains responsive and that you're making
 the most of your available resources. This is difficult to cover in detail, as the applications and
 usage of a Matrix server vary wildly, but I've included some general guidance below:
@@ -111,3 +115,6 @@ LIMIT 10;
  2023 |     8 | image/png  |  2614 | 1316 MB
  ...
 ```
+
+**Note:** For tips on how to have Synapse automatically reduce the size of your media files, see
+[Extra Tips](../../synapse/extra-tips.md) in the [Synapse Deployment Guide](../../synapse/README.md).

@@ -1,8 +1,10 @@
-# Extra Tips
+# Deploying a Synapse Homeserver with Docker
+
+## 6. Extra Tips
 
 1. [Managing Media Files](#managing-media-files)
 
-## Managing Media Files
+### Managing Media Files
 
 Synapse provides [configuration options](https://matrix-org.github.io/synapse/latest/usage/configuration/config_documentation.html#media_retention)
 to manage media files, such as:

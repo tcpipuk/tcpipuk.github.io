@@ -2,6 +2,12 @@
 
 ## 3. Memory Configuration
 
+1. [Shared Buffers](#shared-buffers)
+2. [Shared Memory](#shared-memory)
+3. [Effective Cache Size](#effective-cache-size)
+4. [Working Memory](#working-memory)
+5. [Maintenance Work Memory](#maintenance-work-memory)
+
 Memory plays a pivotal role in the performance of your PostgreSQL database, as does using it
 efficiently in the right places. Having terrabytes of RAM would undoubtedly speed things up, but
 the benefit typically drops off quickly after a few gigabytes.

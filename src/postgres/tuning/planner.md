@@ -2,6 +2,9 @@
 
 ## 4. Query Planner Configuration
 
+1. [Cost-Based Parameters](#cost-based-parameters)
+2. [Partitioning Parameters](#partitioning-parameters)
+
 If tuning a database is like orchestrating a complex symphony, the query planner is the conductor
 guiding this intricate performance. More literally, the query planner evaluates the multiple
 possible ways a given query could be handled, and attempts to choose the most efficient one.
