@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 
 env:
+  CARGO_TERM_COLOR: always
   SCCACHE_VERSION: "0.9.0"
   MDBOOK_VERSION: "0.4.43"
   MDBOOK_ADMONISH_VERSION: "1.15.0"
@@ -85,11 +86,27 @@ jobs:
 
       - name: Install mdbook-graphviz
         run: |
+          # Download the file
           wget -qO graphviz.zip \
             "https://github.com/dylanowen/mdbook-graphviz/releases/download/v${MDBOOK_GRAPHVIZ_VERSION}/mdbook-graphviz_v${MDBOOK_GRAPHVIZ_VERSION}_x86_64-unknown-linux-musl.zip"
-          unzip -o graphviz.zip -d /usr/local/bin
+
+          # Debug: List zip contents
+          unzip -l graphviz.zip
+
+          # Debug: List current directory contents
+          ls -alh
+
+          # Debug: Create temp dir and extract there to inspect
+          mkdir -p /tmp/graphviz
+          unzip -o graphviz.zip -d /tmp/graphviz
+          ls -la /tmp/graphviz
+
+          # Original installation
+          sudo mv /tmp/graphviz/mdbook-graphviz /usr/local/bin/
           sudo chmod +x /usr/local/bin/mdbook-graphviz
-          rm -rf graphviz.zip
+
+          # Cleanup
+          rm -rf graphviz.zip /tmp/graphviz
 
       - name: Install mdbook-mermaid
         run: |
