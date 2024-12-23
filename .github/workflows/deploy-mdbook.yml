@@ -8,11 +8,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  SCCACHE_VERSION: "0.9.0"
-  MDBOOK_VERSION: "0.4.43"
-  MDBOOK_ADMONISH_VERSION: "1.15.0"
-  MDBOOK_GRAPHVIZ_VERSION: "0.2.1"
-  MDBOOK_MERMAID_VERSION: "0.13.0"
 
 permissions:
   contents: read
@@ -27,9 +22,6 @@ jobs:
   build-deps:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Source
-        uses: actions/checkout@v4
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -40,49 +32,43 @@ jobs:
             ~/.cargo/git
             ~/.cargo/registry
             target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: cargo-deps-${{ runner.arch }}-${{ runner.os-release }}
 
-      - name: Check for existing mdbook-footnote
-        id: check-footnote
+      - name: Check for existing binaries
+        id: check-binaries
         run: |
-          if [ -f ~/.cargo/bin/mdbook-footnote ]; then
+          if [ -f ~/.cargo/bin/mdbook ] && \
+             [ -f ~/.cargo/bin/mdbook-admonish ] && \
+             [ -f ~/.cargo/bin/mdbook-footnote ] && \
+             [ -f ~/.cargo/bin/mdbook-graphviz ] && \
+             [ -f ~/.cargo/bin/mdbook-mermaid ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "mdbook-footnote binary found, will skip build"
+            echo "All mdbook binaries found, will skip build"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "mdbook-footnote binary not found, will build"
+            echo "Some mdbook binaries missing, will build"
           fi
 
-      - name: Build mdbook-footnote
-        if: steps.check-footnote.outputs.exists != 'true'
+      - name: Build all mdbook components
+        if: steps.check-binaries.outputs.exists != 'true'
         run: |
           mkdir -p target
+          cargo install mdbook --target-dir target
+          cargo install mdbook-admonish --target-dir target
           cargo install mdbook-footnote --target-dir target
-
-      - name: Check for existing mdbook-graphviz
-        id: check-graphviz
-        run: |
-          if [ -f ~/.cargo/bin/mdbook-graphviz ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "mdbook-graphviz binary found, will skip build"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "mdbook-graphviz binary not found, will build"
-          fi
-
-      - name: Build mdbook-graphviz
-        if: steps.check-graphviz.outputs.exists != 'true'
-        run: |
-          mkdir -p target
-          cargo install mdbook-graphviz --version ${MDBOOK_GRAPHVIZ_VERSION} --target-dir target
+          cargo install mdbook-graphviz --target-dir target
+          cargo install mdbook-mermaid --target-dir target
 
       - name: Upload Binaries
         uses: actions/upload-artifact@v4
         with:
-          name: mdbook-plugins
+          name: mdbook-binaries
           path: |
+            ~/.cargo/bin/mdbook
+            ~/.cargo/bin/mdbook-admonish
             ~/.cargo/bin/mdbook-footnote
             ~/.cargo/bin/mdbook-graphviz
+            ~/.cargo/bin/mdbook-mermaid
           retention-days: 1
 
   deploy-mdbook:
@@ -99,37 +85,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends graphviz
 
-      - name: Install mdBook
-        run: |
-          wget -qO mdbook.tar.gz \
-            "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf mdbook.tar.gz -C /usr/local/bin
-          rm -rf mdbook.tar.gz
-
-      - name: Install mdbook-admonish
-        run: |
-          wget -qO admonish.tar.gz \
-            "https://github.com/tommilligan/mdbook-admonish/releases/download/v${MDBOOK_ADMONISH_VERSION}/mdbook-admonish-v${MDBOOK_ADMONISH_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf admonish.tar.gz -C /usr/local/bin
-          rm -rf admonish.tar.gz
-
-      - name: Download mdbook plugins
+      - name: Download mdbook binaries
         uses: actions/download-artifact@v4
         with:
-          name: mdbook-plugins
+          name: mdbook-binaries
           path: /usr/local/bin
 
-      - name: Make plugins executable
+      - name: Make binaries executable
         run: |
+          sudo chmod +x /usr/local/bin/mdbook
+          sudo chmod +x /usr/local/bin/mdbook-admonish
           sudo chmod +x /usr/local/bin/mdbook-footnote
           sudo chmod +x /usr/local/bin/mdbook-graphviz
-
-      - name: Install mdbook-mermaid
-        run: |
-          wget -qO mermaid.tar.gz \
-            "https://github.com/badboy/mdbook-mermaid/releases/download/v${MDBOOK_MERMAID_VERSION}/mdbook-mermaid-v${MDBOOK_MERMAID_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf mermaid.tar.gz -C /usr/local/bin
-          rm -rf mermaid.tar.gz
+          sudo chmod +x /usr/local/bin/mdbook-mermaid
 
       - name: Prepare Assets Directories
         run: mkdir -p src/fonts src/assets theme
