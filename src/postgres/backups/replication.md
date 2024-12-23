@@ -21,7 +21,9 @@ The output should look something like this:
 
 ### Replica Logs
 
-When running `docker logs synapse-db-replica-1` (adjusting your replica's name as necessary) we should now see messages distinct from the primary's typical "checkpoint" logs. Here's a concise breakdown using an example log:
+When running `docker logs synapse-db-replica-1` (adjusting your replica's name as necessary) we
+should now see messages distinct from the primary's typical "checkpoint" logs. Here's a concise
+breakdown using an example log:
 
 ```yaml
 LOG:  entering standby mode
@@ -42,4 +44,6 @@ LOG:  recovery restart point at [WAL location]
 - **Restart Points**: Periodic checkpoints in the replica for data consistency.
 - **Recovery Restart Point**: The point where recovery would begin if the replica restarts.
 
-If you're seeing errors here, double-check the steps above: Postgres will refuse to start if the configuration between the two containers is too different, so if you've skipped steps or done them out of order then it should explain quite verbosely what went wrong here.
+If you're seeing errors here, double-check the steps above: Postgres will refuse to start if the
+configuration between the two containers is too different, so if you've skipped steps or done them
+out of order then it should explain quite verbosely what went wrong here.
