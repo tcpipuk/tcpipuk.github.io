@@ -33,7 +33,7 @@ jobs:
           version: "0.9.0"
 
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@v2.2.1
+        uses: Swatinem/rust-cache@v2.7.5
 
       - name: Build mdbook-footnote
         run: cargo install mdbook-footnote
