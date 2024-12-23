@@ -16,12 +16,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build-footnote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build mdbook-footnote
+        run: cargo install mdbook-footnote
+
+      - name: Upload Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdbook-footnote
+          path: ~/.cargo/bin/mdbook-footnote
+          retention-days: 1
+
   deploy-mdbook:
+    needs: build-footnote
     runs-on: ubuntu-latest
     env:
       MDBOOK_VERSION: "0.4.43"
       MDBOOK_ADMONISH_VERSION: "1.15.0"
-      MDBOOK_FOOTNOTE_VERSION: "0.1.3"
       MDBOOK_GRAPHVIZ_VERSION: "0.1.6"
       MDBOOK_MERMAID_VERSION: "0.13.0"
 
@@ -46,24 +62,26 @@ jobs:
           sudo tar xf admonish.tar.gz -C /usr/local/bin
           rm -rf admonish.tar.gz
 
-      - name: Install mdbook-footnote
-        run: |
-          wget -qO footnote.tar.gz \
-            "https://github.com/daviddrysdale/mdbook-footnote/releases/latest/download/mdbook-footnote-x86_64-unknown-linux-gnu.tar.gz"
-          sudo tar xf footnote.tar.gz -C /usr/local/bin
-          rm -rf footnote.tar.gz
+      - name: Download mdbook-footnote
+        uses: actions/download-artifact@v4
+        with:
+          name: mdbook-footnote
+          path: /usr/local/bin
+
+      - name: Make footnote executable
+        run: sudo chmod +x /usr/local/bin/mdbook-footnote
 
       - name: Install mdbook-graphviz
         run: |
           wget -qO graphviz.tar.gz \
-            "https://github.com/dylanowen/mdbook-graphviz/releases/latest/download/mdbook-graphviz-x86_64-unknown-linux-gnu.tar.gz"
+            "https://github.com/dylanowen/mdbook-graphviz/releases/download/v${MDBOOK_GRAPHVIZ_VERSION}/mdbook-graphviz-v${MDBOOK_GRAPHVIZ_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
           sudo tar xf graphviz.tar.gz -C /usr/local/bin
           rm -rf graphviz.tar.gz
 
       - name: Install mdbook-mermaid
         run: |
           wget -qO mermaid.tar.gz \
-            "https://github.com/badboy/mdbook-mermaid/releases/latest/download/mdbook-mermaid-x86_64-unknown-linux-gnu.tar.gz"
+            "https://github.com/badboy/mdbook-mermaid/releases/download/v${MDBOOK_MERMAID_VERSION}/mdbook-mermaid-v${MDBOOK_MERMAID_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
           sudo tar xf mermaid.tar.gz -C /usr/local/bin
           rm -rf mermaid.tar.gz
 
