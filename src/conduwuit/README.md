@@ -1,9 +1,21 @@
-
 # Matrix Conduwuit Homeserver Guides
 
 This section provides comprehensive guides for deploying Conduwuit, a featureful fork of the Conduit
 Matrix homeserver. Written in Rust, Conduwuit aims to be a high-performance and efficient homeserver
 that's easy to set up and "just works".
+
+## Quick Start
+
+These Docker guides will walk you through:
+
+1. [Docker Deployment](docker.md) - Set up the Conduwuit container
+2. [Server Configuration](config.md) - Configure your homeserver
+3. [Reverse Proxies](reverse-proxies/README.md) - Set up external access
+   - [SSL Certificates](reverse-proxies/ssl.md) - Secure your server
+   - Choose your proxy:
+     - [Caddy](reverse-proxies/caddy.md) - Simple, automatic HTTPS
+     - [Nginx](reverse-proxies/nginx.md) - Popular and flexible
+     - [Traefik](reverse-proxies/traefik.md) - Docker-native solution
 
 ## Deployment Options
 
@@ -29,12 +41,6 @@ Key features and differences from Conduit:
 - Actively maintained with regular updates
 - Designed for stability and real-world use
 
-These guides will walk you through:
-
-- Setting up Conduwuit using Docker
-- Configuring the server for your needs
-- Setting up reverse proxies with either Nginx or Caddy
-
 ## Getting Help
 
 If you need assistance, you can join these Matrix rooms:
@@ -45,6 +51,9 @@ If you need assistance, you can join these Matrix rooms:
   Community chat
 - [#conduwuit-dev:puppygock.gay](https://matrix.to/#/#conduwuit-dev:puppygock.gay) -
   Development discussion
+
+Please review our [Community Code of Conduct](https://conduwuit.puppyirl.gay/conduwuit_coc.html)
+before participating in these rooms.
 
 ## Try It Out
 
