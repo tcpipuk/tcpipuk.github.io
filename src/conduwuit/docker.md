@@ -32,70 +32,60 @@ However, for production deployments, we recommend using Docker Compose for bette
 
 ## Docker Compose Deployment
 
-We provide several Docker Compose templates depending on your reverse proxy preference:
+We provide two main deployment patterns, depending on how you want to connect to your reverse proxy:
 
-1. **Basic Setup** - For use with any reverse proxy
-2. **Traefik Integration** - Two options:
-   - For existing Traefik installations
-   - Complete setup including Traefik
-3. **Caddy Integration** - Ready-to-use setup with Caddy
+### TCP Port Configuration
 
-### Basic Setup
-
-Create a `docker-compose.yml` file:
+This configuration exposes Conduwuit on a TCP port, suitable for when your reverse proxy is on a
+different host or when using Kubernetes:
 
 ```yaml:docker-compose.yml
 version: '3.8'
 
 services:
   conduwuit:
+    cpus: 3
     image: ghcr.io/girlbossceo/conduwuit:latest
+    environment:
+      CONDUWUIT_CONFIG: '/var/lib/conduwuit/conduwuit.toml'
+    mem_limit: 4G
+    ports:
+      - "6167:6167"
     restart: unless-stopped
     volumes:
       - ./data:/var/lib/conduwuit
-    environment:
-      - CONDUWUIT_SERVER_NAME=example.com
-      - CONDUWUIT_ALLOW_REGISTRATION=false
-      - CONDUWUIT_DATABASE_BACKEND=rocksdb
-      - CONDUWUIT_DATABASE_PATH=/var/lib/conduwuit/db
-    ports:
-      - "6167:6167"
 ```
 
-### Well-Known Setup
+### Unix Socket Configuration
 
-For federation to work properly, you'll need to serve `.well-known` files. This can be handled by
-your reverse proxy, but we provide a simple Nginx container to serve these files if needed:
+This configuration uses Unix sockets for improved performance when your reverse proxy is on the same
+host:
 
 ```yaml:docker-compose.yml
-  well-known:
-    image: nginx:alpine
+version: '3.8'
+
+services:
+  conduwuit:
+    cpus: 3
+    image: ghcr.io/girlbossceo/conduwuit:latest
+    environment:
+      CONDUWUIT_CONFIG: '/var/lib/conduwuit/conduwuit.toml'
+    mem_limit: 4G
     restart: unless-stopped
     volumes:
-      - ./well-known:/usr/share/nginx/html/.well-known
-    ports:
-      - "8080:80"
+      - ./data:/var/lib/conduwuit
+      - /run/conduwuit:/run/conduwuit
 ```
 
-Create the well-known files:
+For both configurations, create a configuration file in the `data` directory:
 
 ```bash
-mkdir -p well-known/matrix
+curl -o data/conduwuit.toml https://raw.githubusercontent.com/girlbossceo/conduwuit/main/conduwuit-example.toml
 ```
 
-```json:well-known/matrix/server
-{
-    "m.server": "example.com:443"
-}
-```
-
-```json:well-known/matrix/client
-{
-    "m.homeserver": {
-        "base_url": "https://example.com"
-    }
-}
-```
+See the [configuration guide](config.md) for more information on configuring Conduwuit, and the
+[reverse proxy guide](reverse-proxies/README.md) for more information on how to set up a reverse
+proxy to handle inbound connections to the server.
 
 ## Starting the Server
 
@@ -108,26 +98,3 @@ docker compose up -d
 # View the logs
 docker compose logs -f
 ```
-
-## Configuration Options
-
-Conduwuit can be configured either through environment variables or a config file. Environment
-variables take precedence over the config file.
-
-Common environment variables include:
-
-```yaml
-CONDUWUIT_SERVER_NAME: "example.com"
-CONDUWUIT_ALLOW_REGISTRATION: "false"
-CONDUWUIT_DATABASE_BACKEND: "rocksdb"
-CONDUWUIT_DATABASE_PATH: "/var/lib/conduwuit/db"
-CONDUWUIT_PORT: "6167"
-```
-
-For a complete list of configuration options, see the [Configuration](config.md) guide.
-
-## Next Steps
-
-- Configure your chosen [reverse proxy](reverse-proxies/README.md)
-- Review the [configuration options](config.md) for additional settings
-- Consider setting up [TURN](https://conduwuit.puppyirl.gay/deploying/turn.html) for voice/video calls
