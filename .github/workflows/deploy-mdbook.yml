@@ -115,9 +115,9 @@ jobs:
           curl -sSfL -o theme/catppuccin-admonish.css \
             https://github.com/catppuccin/mdBook/releases/latest/download/catppuccin-admonish.css
 
-          # Download default theme's index.hbs for customization
+          # Download default theme's index.hbs for customisation
           curl -sSfL -o theme/index.hbs \
-            https://raw.githubusercontent.com/rust-lang/mdBook/master/src/theme/index.hbs
+            https://raw.githubusercontent.com/rust-lang/mdBook/refs/heads/master/src/front-end/templates/index.hbs
 
           # Update index.hbs theme options
           sed -i 's/Light/Latte/; s/Rust/Frappé/; s/Coal/Macchiato/; s/Navy/Mocha/; /Ayu/d' theme/index.hbs
@@ -148,6 +148,11 @@ jobs:
           curl -sSf \
             -o src/assets/whichlang.js \
             https://raw.githubusercontent.com/phoenixr-codes/mdbook-whichlang/master/dist/whichlang.js
+
+          # Mermaid JS
+          curl -sSf \
+            -o src/assets/mermaid.min.js \
+            https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js
 
       - name: Build the mdBook Site
         run: mdbook build

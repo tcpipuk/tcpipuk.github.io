@@ -34,16 +34,16 @@ Here's a diagram of how requests should flow once we're done:
 
 ```mermaid
 graph TD;
-    A[Client\nRequests] --> B[Client Sync &\nStream Writers];
-    A --> C[Main\nProcess];
+    A[Client<br>Requests] --> B[Client Sync &<br>Stream Writers];
+    A --> C[Main<br>Process];
     C --> B;
-    C --> E[Background &\nEvent Writer];
-    A --> D[Room\nWorkers];
-    F[Federation\nRequests] --> D;
-    F --> G[Federation\nReader]
+    C --> E[Background &<br>Event Writer];
+    A --> D[Room<br>Workers];
+    F[Federation<br>Requests] --> D;
+    F --> G[Federation<br>Reader]
     G --> B;
     G --> E;
-    H[Media\nRequests] --> I[Media\nRepository];
+    H[Media<br>Requests] --> I[Media<br>Repository];
 ```
 
 - **Main Process**: Some requests can only go to the Synapse main process, but we also send client

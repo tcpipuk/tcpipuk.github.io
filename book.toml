@@ -12,7 +12,7 @@ create-missing = true
 
 [output.html]
 default-theme = "latte"
-preferred-dark-theme = "mocha"
+preferred-dark-theme = "macchiato"
 # URL to send visitors who click edit
 edit-url-template = "https://github.com/tcpipuk/tcpipuk.github.io/edit/main/{path}"
 # Remove numbers before each item in the sidebar
@@ -30,7 +30,12 @@ additional-css = [
 	"./theme/catppuccin.css",
 	"./theme/catppuccin-admonish.css",
 ]
-additional-js = ["src/assets/table-of-contents.js", "src/assets/whichlang.js"]
+additional-js = [
+	"src/assets/table-of-contents.js",
+	"src/assets/whichlang.js",
+	"src/assets/mermaid.min.js",
+	"src/assets/mermaid-init.js",
+]
 
 [preprocessor.footnote]
 
@@ -38,3 +43,6 @@ additional-js = ["src/assets/table-of-contents.js", "src/assets/whichlang.js"]
 after = ["links"]
 command = "mdbook-graphviz"
 output-to-file = false
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
