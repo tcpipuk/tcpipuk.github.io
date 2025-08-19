@@ -86,7 +86,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends graphviz
 
       - name: Download mdbook binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: mdbook-binaries
           path: /usr/local/bin
